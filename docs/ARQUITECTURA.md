@@ -1,8 +1,8 @@
-# Arquitectura inicial
+# Arquitectura — actualizada el 16 de octubre de 2026
 
 ## Decisión para la primera revisión
 
-Aplicación web con HTML, CSS y JavaScript; servidor Node con API HTTP. Sin dependencias externas para poder revisar el recorrido inmediatamente con las herramientas disponibles. Esta elección es una base de demostración y se revisará para el despliegue.
+Aplicación web con HTML, CSS y JavaScript; servidor Node con API HTTP. PDF.js extrae texto PDF y Mammoth procesa DOCX. La IA usa OpenAI Responses desde servidor. GitHub conserva el código y Railway sirve HTTPS y un volumen persistente configurado mediante DATA_DIR. Arquitectura de demo de una sola instancia.
 
 ## Estructura
 
@@ -26,8 +26,8 @@ Aplicación web con HTML, CSS y JavaScript; servidor Node con API HTTP. Sin depe
 
 ## Límites y evolución
 
-El navegador solicita los registros de la comunidad seleccionada. El servidor filtra y valida la pertenencia al editar. Los perfiles no son credenciales: cualquier usuario de la demo puede cambiar de vista y comunidad. Para clientes reales, la comunidad y los permisos deberán derivarse de una sesión autorizada, con separación por usuario y controles en servidor.
+La sesión autenticada determina rol y comunidades. El servidor comprueba lectura y escritura por comunidad y autor. Las consultas particulares están separadas del canal comunitario: solo el vecino autor y Gestión VecinoIA autorizada pueden acceder. La administración ordinaria no tiene acceso a ese canal. Los documentos y fichas editoriales tienen borrador, publicación y retirada; las fichas no alimentan automáticamente al asistente.
 
-El almacenamiento local escribe un archivo temporal y lo renombra para reducir el riesgo de escrituras incompletas. No soporta varias instancias ni almacenamiento efímero de alojamiento. Se sustituirá por una base de datos antes de usarlo en esos entornos.
+El almacenamiento JSON escribe un archivo temporal y lo renombra. DATA_DIR agrupa JSON, usuarios y uploads en el volumen de Railway; se ha comprobado conservación del registro publicado y original del gimnasio tras un despliegue. No soporta varias instancias ni almacenamiento efímero. Sesiones y límites de uso viven en memoria y se reinician con el proceso. Para operación profesional se requiere revisar base de datos, archivos y backups.
 
-La integración de IA será exclusivamente desde servidor, con la clave en variable de entorno y contexto limitado a la comunidad. Las fuentes deberán validarse y las preguntas sin soporte ofrecerán derivación. Ninguna clave se enviará al navegador o a Git.
+La IA funciona desde servidor con clave privada y contexto limitado a documentos listos y publicados de la comunidad. Las citas se contrastan literalmente y las preguntas sin soporte ofrecen derivación. Esta comprobación no garantiza corrección semántica total. No hay embeddings, OCR ni historial conversacional enviado al proveedor. Ante fallos se conserva búsqueda documental local. Ninguna clave se envía al navegador o a Git.

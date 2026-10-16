@@ -138,3 +138,7 @@ Resultado: se observa reinicio por revocación de sesión; el registro publicado
 La captura posterior muestra `vecinoia-volume` asociado y un cambio pendiente. Se indica aplicar Deploy; el usuario confirma «online». Se inicia una segunda prueba con publicación y descarga idéntica del ejemplo del gimnasio, antes de otro despliegue controlado. El fallo anterior se conserva como historial, no como resultado de esta segunda prueba.
 
 Segunda prueba superada tras despliegue `7315a86`: revocación de sesión confirma reinicio y una nueva sesión encuentra el mismo documento publicado; los bytes descargados conservan el mismo SHA-256. Se actualiza el estado de la documentación. El ejemplo queda disponible para el ensayo. El resultado no implica validación de backups ni continuidad del plan durante toda la evaluación.
+
+## 020 — Documentos de entrega
+
+16 de octubre de 2026. Tras confirmar la persistencia documental pública, el usuario acepta preparar los dos Google Docs. Se crean por separado documentación técnica e historial, se añaden capturas de la web pública y se revisa el contenido. Quedan pendientes vídeo, permisos públicos de entrega, acceso del jurado al repositorio y envío del formulario. El uso de las herramientas de Drive y Docs se limita a preparar documentos; no se genera lógica de la aplicación con ellas.
