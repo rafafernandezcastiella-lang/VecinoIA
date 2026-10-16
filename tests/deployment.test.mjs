@@ -20,7 +20,12 @@ test('Alojamiento: ruta persistente, healthcheck y cookies de producción', asyn
     let base = await start();
     assert.deepEqual(await (await fetch(`${base}/healthz`)).json(), { ok: true });
     const login = async () => {
-      const r = await fetch(`${base}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'administrador', password: 'Admin-Demo-2026!' }) });
+      const credentials = JSON.stringify({ username: 'administrador', password: 'Admin-Demo-2026!' });
+      for (const origin of ['https://otro.example', base]) {
+        const denied = await fetch(`${base}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: credentials });
+        assert.equal(denied.status, 403);
+      }
+      const r = await fetch(`${base}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: base.replace('http:', 'https:') }, body: credentials });
       assert.equal(r.status, 200); assert.match(r.headers.get('set-cookie'), /; Secure/);
       return { Cookie: r.headers.get('set-cookie').split(';')[0], 'X-CSRF-Token': (await r.json()).csrfToken, 'Content-Type': 'application/json' };
     };

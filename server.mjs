@@ -58,7 +58,9 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         return res.end(readFileSync(join(root, 'public', file[0])));
       }
       const mutating = ['POST', 'PATCH'].includes(req.method);
-      if (mutating && ((req.headers.origin && req.headers.origin !== url.origin) || req.headers['sec-fetch-site'] === 'cross-site')) return reply(403, { error: 'Origen de solicitud no autorizado' });
+      // En producción TLS termina en el proxy del alojamiento; el navegador usa HTTPS.
+      const browserOrigin = `${process.env.NODE_ENV === 'production' ? 'https:' : url.protocol}//${url.host}`;
+      if (mutating && ((req.headers.origin && req.headers.origin !== browserOrigin) || req.headers['sec-fetch-site'] === 'cross-site')) return reply(403, { error: 'Origen de solicitud no autorizado' });
       let body;
       if (mutating && url.pathname !== '/api/documents/upload') {
         if (!req.headers['content-type']?.startsWith('application/json')) return reply(415, { error: 'Contenido JSON requerido' });

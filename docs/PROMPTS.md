@@ -122,3 +122,7 @@ El 15 de octubre el usuario indica «clave guardada». Se confirma únicamente s
 ## 017 — Primera subida a GitHub
 
 16 de octubre de 2026. El usuario confirma la cuenta `rafafernandezcastiella-lang`, crea el repositorio VecinoIA siguiendo las instrucciones de visibilidad privada y autoriza Git Credential Manager. Se revisan los archivos preparados y se excluyen claves, datos locales, cachés y contexto pegado. Se crea el primer commit `342b0c4` sin reconstruir ni falsear commits anteriores y se sube la rama `codex/hackathon`. La referencia remota coincide con la local. Se actualiza la documentación; el alojamiento público sigue pendiente.
+
+## 018 — Primera comprobación pública en Railway
+
+16 de octubre de 2026. El usuario configura variables, comunica creación de volumen y facilita `https://vecinoia-production.up.railway.app`. Portada y healthcheck responden HTTP 200; archivos sensibles no son accesibles por HTTP. La prueba inicial de login recibe 403 por comparación HTTP/HTTPS detrás del proxy. Se corrige el origen permitido en producción para usar HTTPS, sin confiar en cabeceras de protocolo enviadas por el cliente. Se comprueba aceptación de origen HTTPS del mismo host y rechazo de otros orígenes y HTTP en producción. Pendiente nueva comprobación pública tras desplegar la corrección.
