@@ -1,0 +1,7 @@
+Normas del gimnasio ficticio de Los Olivos
+
+El gimnasio cierra a las 22:00 todos los días.
+El gimnasio abre a las 07:00.
+El gimnasio admite un máximo de seis personas a la vez.
+
+Documento ficticio para probar la carga y publicación de fuentes en VecinoIA.

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VecinoIA: información, consultas y servicios de tu comunidad en un solo lugar.">
+  <title>VecinoIA · Tu comunidad, más cerca</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/anpara.css">
+  <link rel="stylesheet" href="/auth.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Ir al contenido</a>
+  <div class="demo-banner">DEMOSTRACIÓN · Usuarios y comunidades ficticios · No introduzcas datos personales</div>
+  <section id="login-screen" class="login-screen" hidden aria-labelledby="login-title">
+    <div class="login-intro"><div class="eyebrow">VECINOIA · TU COMUNIDAD, MÁS CERCA</div><h1>Tu comunidad.<br>Tu espacio.</h1><p>Información, respuestas y atención en un lugar pensado para ti.</p><span class="login-photo-caption">Residencial Los Olivos · Comunidad ficticia</span></div>
+    <div class="login-card"><span class="login-kicker">BIENVENIDO A VECINOIA</span><h2 id="login-title">Accede a tu portal</h2><p>Utiliza el usuario y la contraseña que te facilite el equipo de gestión.</p>
+      <form id="login-form" class="form"><label for="username">Usuario<input id="username" name="username" autocomplete="username" required maxlength="80" autocapitalize="none" spellcheck="false"></label><label for="password">Contraseña<input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"></label><p id="login-error" role="alert" hidden></p><button class="btn" type="submit">Entrar en mi portal ↗</button></form>
+      <details class="demo-credentials"><summary>Usuarios ficticios para probar la demo</summary><p>Estas claves son públicas y solo sirven para la demostración.</p><dl><dt>Vecino de Los Olivos</dt><dd>vecino.olivos · Olivos-Demo-2026!</dd><dt>Otro vecino de Los Olivos</dt><dd>vecino.olivos2 · Olivos2-Demo-2026!</dd><dt>Vecina de Plaza Mayor</dt><dd>vecino.plaza · Plaza-Demo-2026!</dd><dt>Administrador de ambas comunidades</dt><dd>administrador · Admin-Demo-2026!</dd><dt>Administrador solo de Los Olivos</dt><dd>admin.olivos · AdminOlivos-Demo-2026!</dd><dt>Gestión VecinoIA</dt><dd>gestion · Gestion-Demo-2026!</dd></dl></details>
+    </div>
+  </section>
+  <div class="layout" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="VecinoIA, inicio"><span class="brand-mark">v</span> Vecino<span>IA</span></a>
+      <div class="brand-caption">UN PORTAL PARA ESTAR MÁS CERCA</div>
+      <div class="community-switch"><label for="community">TU COMUNIDAD</label><select id="community" aria-label="Seleccionar comunidad"></select></div>
+      <nav aria-label="Navegación principal" id="nav"></nav>
+      <div class="sidebar-bottom"><span class="avatar" id="user-avatar">V</span><div><strong id="user-name"></strong><small id="user-role"></small></div></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><span id="community-name">VecinoIA</span><div class="session-actions"><span id="session-role"></span><button id="logout" class="btn secondary" type="button">Cerrar sesión</button></div></header>
+      <main id="content" tabindex="-1"><p>Cargando tu comunidad…</p></main>
+      <footer><span>VecinoIA · Tu comunidad responde, informa y gestiona.</span><span>Comunidad ficticia · Imagen generada con IA</span></footer>
+    </div>
+  </div>
+  <div id="notice" role="status" aria-live="polite"></div>
+</body>
+</html>

@@ -1,0 +1,381 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve, relative } from 'node:path';
+import { createApp } from '../server.mjs';
+import { demoAccounts } from '../src/auth.mjs';
+import { documentPDF } from '../src/pdf.mjs';
+import { createAssistant } from '../src/assistant.mjs';
+
+async function fixture(assistant = createAssistant({ apiKey: '' })) {
+  const dir = mkdtempSync(join(tmpdir(), 'vecinoia-auth-'));
+  let server, base;
+  const dataFile = join(dir, 'demo.json');
+  async function start() { server = createApp({ dataFile, assistant }); await new Promise(r => server.listen(0, '127.0.0.1', r)); base = `http://127.0.0.1:${server.address().port}`; }
+  async function stop() { if (server?.listening) await new Promise(r => server.close(r)); }
+  async function request(path, method = 'GET', body, session, extra = {}) {
+    const response = await fetch(`${base}/api/${path}`, { method, headers: { 'Content-Type': 'application/json', ...(session ? { Cookie: session.cookie, 'X-CSRF-Token': session.csrfToken } : {}), ...extra }, body: body === undefined ? undefined : JSON.stringify(body) });
+    return { status: response.status, body: await response.json(), cookie: response.headers.get('set-cookie') };
+  }
+  async function login(username) {
+    const account = demoAccounts.find(a => a.username === username);
+    const r = await request('login', 'POST', { username, password: account.password });
+    assert.equal(r.status, 200);
+    return { cookie: r.cookie.split(';')[0], csrfToken: r.body.csrfToken, user: r.body.user };
+  }
+  await start();
+  const download = async (path, session) => {
+    const response = await fetch(`${base}/api/${path}`, { headers: session ? { Cookie: session.cookie } : {} });
+    return { status: response.status, type: response.headers.get('content-type'), disposition: response.headers.get('content-disposition'), data: Buffer.from(await response.arrayBuffer()) };
+  };
+  const upload = async (filename, bytes, title, session, community = 'olivos') => {
+    const form = new FormData(); form.set('title', title); form.set('file', new Blob([bytes]), filename);
+    const response = await fetch(`${base}/api/documents/upload?community=${community}`, { method: 'POST', headers: session ? { Cookie: session.cookie, 'X-CSRF-Token': session.csrfToken } : {}, body: form });
+    return { status: response.status, body: await response.json() };
+  };
+  return { request, login, download, upload, dir, restart: async () => { await stop(); await start(); }, close: async () => { await stop(); const rel = relative(resolve(tmpdir()), resolve(dir)); assert.ok(rel && !rel.startsWith('..')); rmSync(dir, { recursive: true, force: true }); } };
+}
+const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
+
+test('Contenidos: permisos, revisión, publicación, edición, retirada y persistencia', async () => {
+  const f = await fixture();
+  try {
+    let admin = await f.login('admin.olivos'), resident = await f.login('vecino.olivos');
+    const item = { title: 'Ficha ficticia de gas', body: 'Información ilustrativa sin ofertas reales.', kind: 'Consejos', category: 'Gas' };
+    assert.equal((await f.request('advice?community=olivos', 'POST', item)).status, 401);
+    assert.equal((await f.request('advice?community=olivos', 'POST', item, resident)).status, 403);
+    assert.equal((await f.request('advice?community=plaza', 'POST', item, admin)).status, 403);
+    assert.equal((await f.request('advice?community=olivos', 'POST', { ...item, kind: 'Inválida' }, admin)).status, 400);
+    const created = await f.request('advice?community=olivos', 'POST', item, admin);
+    assert.equal(created.status, 201); assert.equal(created.body.status, 'draft');
+    const id = created.body.id, path = `advice/${id}?community=olivos`;
+    const visible = async session => (await f.request('state?community=olivos', 'GET', undefined, session)).body.advice.find(a => a.id === id);
+    assert.equal(await visible(resident), undefined); assert.ok(await visible(admin));
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish', reviewed: true }, resident)).status, 403);
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish' }, admin)).status, 400);
+    assert.equal((await f.request(`advice/${id}?community=plaza`, 'PATCH', { action: 'publish', reviewed: true }, await f.login('administrador'))).status, 404);
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish', reviewed: true }, admin)).status, 200);
+    assert.equal((await visible(resident)).title, item.title);
+    assert.equal((await f.request(path, 'PATCH', { ...item, action: 'edit' }, admin)).status, 409);
+    await f.restart(); admin = await f.login('admin.olivos'); resident = await f.login('vecino.olivos');
+    assert.equal((await visible(resident)).status, 'published');
+    assert.equal((await f.request(path, 'PATCH', { action: 'withdraw' }, admin)).status, 200);
+    assert.equal(await visible(resident), undefined);
+    assert.equal((await f.request(path, 'PATCH', { ...item, title: 'Ficha revisada', action: 'edit' }, admin)).body.status, 'draft');
+    const manager = await f.login('gestion');
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish', reviewed: true }, manager)).status, 200);
+    assert.equal((await visible(resident)).title, 'Ficha revisada');
+  } finally { await f.close(); }
+});
+
+test('Identificación, cookies, CSRF, credenciales y cierre de sesión', async () => {
+  const f = await fixture();
+  try {
+    assert.equal((await f.request('communities')).status, 401);
+    assert.equal((await f.request('state?community=olivos')).status, 401);
+    assert.equal((await f.request('login', 'POST', { username: 'vecino.olivos', password: 'incorrecta' })).status, 401);
+    assert.equal((await f.request('login', 'POST', { username: 'no-existe', password: 'incorrecta' })).status, 401);
+    const account = demoAccounts[0];
+    const crossSite = await f.request('login', 'POST', { username: account.username, password: account.password }, undefined, { Origin: 'https://otro-sitio.invalid' });
+    assert.equal(crossSite.status, 403);
+    const login = await f.request('login', 'POST', { username: account.username, password: account.password });
+    assert.equal(login.status, 200); assert.match(login.cookie, /HttpOnly/); assert.match(login.cookie, /SameSite=Strict/);
+    assert.ok(!('passwordHash' in login.body.user)); assert.ok(!('salt' in login.body.user));
+    const session = { cookie: login.cookie.split(';')[0], csrfToken: login.body.csrfToken };
+    assert.equal((await f.request('session', 'GET', undefined, session)).status, 200);
+    assert.equal((await f.request('tickets?community=olivos', 'POST', draft, session, { 'X-CSRF-Token': '' })).status, 403);
+    assert.equal((await f.request('tickets?community=olivos', 'POST', draft, session, { Origin: 'https://otro-sitio.invalid' })).status, 403);
+    const logout = await f.request('logout', 'POST', {}, session);
+    assert.equal(logout.status, 200); assert.match(logout.cookie, /Max-Age=0/);
+    assert.equal((await f.request('session', 'GET', undefined, session)).status, 401);
+    const stored = readFileSync(join(f.dir, 'users.json'), 'utf8');
+    for (const a of demoAccounts) assert.ok(!stored.includes(a.password));
+  } finally { await f.close(); }
+});
+
+test('Autorización real por rol, comunidad y propietario de la consulta', async () => {
+  const f = await fixture();
+  try {
+    const ana = await f.login('vecino.olivos'), luis = await f.login('vecino.olivos2');
+    const admin = await f.login('administrador'), limitedAdmin = await f.login('admin.olivos');
+    const manager = await f.login('gestion');
+    assert.deepEqual((await f.request('communities', 'GET', undefined, ana)).body.map(c => c.id), ['olivos']);
+    assert.equal((await f.request('state?community=plaza', 'GET', undefined, ana)).status, 403);
+    assert.equal((await f.request('ask?community=plaza', 'POST', { question: '¿Hay piscina?' }, ana)).status, 403);
+    assert.equal((await f.request('tickets?community=plaza', 'POST', draft, ana)).status, 403);
+    assert.equal((await f.request('state?community=plaza', 'GET', undefined, limitedAdmin)).status, 403);
+    assert.equal((await f.request('communities', 'GET', undefined, admin)).body.length, 2);
+    assert.equal((await f.request('communities', 'GET', undefined, manager)).body.length, 2);
+    const created = await f.request('tickets?community=olivos', 'POST', { ...draft, residentId: luis.user.id, role: 'admin' }, ana);
+    assert.equal(created.status, 201); assert.equal(created.body.residentId, ana.user.id);
+    const id = created.body.id;
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, ana)).body.tickets.length, 1);
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, luis)).body.tickets.length, 0);
+    assert.equal((await f.request(`tickets/${id}?community=olivos`, 'PATCH', { status: 'Resuelta', reply: 'Intento' }, ana)).status, 403);
+    assert.equal((await f.request('announcements?community=olivos', 'POST', { title: 'Intento', body: 'Contenido' }, ana)).status, 403);
+    assert.equal((await f.request(`tickets/${id}?community=plaza`, 'PATCH', { status: 'Resuelta', reply: 'Intento' }, admin)).status, 404);
+    assert.equal((await f.request(`tickets/${id}?community=olivos`, 'PATCH', { status: 'Resuelta', reply: 'Revisado en demo' }, admin)).status, 200);
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, ana)).body.tickets[0].reply, 'Revisado en demo');
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, luis)).body.tickets.length, 0);
+    assert.equal((await f.request('announcements?community=plaza', 'POST', { title: 'Gestión', body: 'Aviso de prueba' }, manager)).status, 201);
+  } finally { await f.close(); }
+});
+
+test('Persistencia de consultas y avisos; reidentificación después de reiniciar', async () => {
+  const f = await fixture();
+  try {
+    const ana = await f.login('vecino.olivos'), admin = await f.login('administrador');
+    const created = await f.request('tickets?community=olivos', 'POST', draft, ana);
+    assert.equal((await f.request(`tickets/${created.body.id}?community=olivos`, 'PATCH', { status: 'Resuelta', reply: 'Respuesta persistente' }, admin)).status, 200);
+    const aviso = await f.request('announcements?community=olivos', 'POST', { title: 'Aviso', body: 'Contenido ficticio' }, admin);
+    assert.equal((await f.request('tickets?community=olivos', 'POST', { ...draft, subject: '' }, ana)).status, 400);
+    assert.equal((await f.request('tickets?community=olivos', 'POST', null, ana)).status, 400);
+    await f.restart();
+    assert.equal((await f.request('session', 'GET', undefined, ana)).status, 401);
+    const again = await f.login('vecino.olivos');
+    const state = (await f.request('state?community=olivos', 'GET', undefined, again)).body;
+    assert.equal(state.tickets[0].reply, 'Respuesta persistente');
+    assert.ok(state.announcements.some(a => a.id === aviso.body.id));
+  } finally { await f.close(); }
+});
+
+test('Fuentes del asistente restringidas a comunidades autorizadas', async () => {
+  const f = await fixture();
+  try {
+    const admin = await f.login('administrador');
+    const ask = async (community, question) => (await f.request(`ask?community=${community}`, 'POST', { question }, admin)).body;
+    const olivos = await ask('olivos', '¿Hay piscina?'), plaza = await ask('plaza', '¿Hay piscina?');
+    assert.ok(olivos.source.id.startsWith('olivos-')); assert.ok(plaza.source.id.startsWith('plaza-'));
+    assert.match(olivos.answer, /10:00/); assert.match(plaza.answer, /no dispone/);
+    assert.equal((await ask('olivos', '¿Cuándo es la reunión?')).unresolved, false);
+    assert.equal((await ask('olivos', '¿Cuál es mi deuda particular?')).unresolved, true);
+    assert.equal((await ask('olivos', '¿Cuándo es la junta y cuánto cuesta la cuota?')).unresolved, true);
+  } finally { await f.close(); }
+});
+
+test('Solicitudes de documentos privadas, validación de canales y confirmación manual', async () => {
+  const f = await fixture();
+  try {
+    const ana = await f.login('vecino.olivos'), luis = await f.login('vecino.olivos2'), admin = await f.login('administrador');
+    const draft = { documentId: 'olivos-normas', channel: 'email', destination: 'vecino@example.com' };
+    const created = await f.request('document-requests?community=olivos', 'POST', { ...draft, residentId: luis.user.id }, ana);
+    assert.equal(created.status, 201); assert.equal(created.body.residentId, ana.user.id); assert.equal(created.body.status, 'Pendiente');
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, luis)).body.documentRequests.length, 0);
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, admin)).body.documentRequests.length, 1);
+    assert.equal((await f.request('document-requests?community=olivos', 'POST', { ...draft, documentId: 'plaza-normas' }, ana)).status, 404);
+    assert.equal((await f.request('document-requests?community=plaza', 'POST', { ...draft, documentId: 'plaza-normas' }, ana)).status, 403);
+    assert.equal((await f.request('document-requests?community=olivos', 'POST', { ...draft, destination: 'correo\nincorrecto' }, ana)).status, 400);
+    assert.equal((await f.request('document-requests?community=olivos', 'POST', { ...draft, channel: 'whatsapp', destination: '+34000000000' }, ana)).status, 201);
+    assert.equal((await f.request('document-requests?community=olivos', 'POST', { ...draft, channel: 'whatsapp', destination: 'teléfono' }, ana)).status, 400);
+    const path = `document-requests/${created.body.id}?community=olivos`;
+    assert.equal((await f.request(path, 'PATCH', { status: 'Envío confirmado por gestor' }, ana)).status, 403);
+    assert.equal((await f.request(path.replace('olivos', 'plaza'), 'PATCH', { status: 'Envío confirmado por gestor' }, admin)).status, 404);
+    assert.equal((await f.request(path, 'PATCH', { status: 'Entregado automáticamente' }, admin)).status, 400);
+    assert.equal((await f.request(path, 'PATCH', { status: 'Envío confirmado por gestor' }, admin)).status, 200);
+    await f.restart(); const again = await f.login('vecino.olivos');
+    const state = (await f.request('state?community=olivos', 'GET', undefined, again)).body;
+    assert.equal(state.documentRequests.find(r => r.id === created.body.id).status, 'Envío confirmado por gestor');
+  } finally { await f.close(); }
+});
+
+test('Descarga PDF protegida por sesión y comunidad', async () => {
+  const f = await fixture();
+  try {
+    const ana = await f.login('vecino.olivos');
+    assert.equal((await f.download('documents/olivos-normas/download?community=olivos')).status, 401);
+    assert.equal((await f.download('documents/plaza-normas/download?community=plaza', ana)).status, 403);
+    assert.equal((await f.download('documents/plaza-normas/download?community=olivos', ana)).status, 404);
+    const pdf = await f.download('documents/olivos-normas/download?community=olivos', ana);
+    assert.equal(pdf.status, 200); assert.equal(pdf.type, 'application/pdf');
+    assert.match(pdf.disposition, /olivos-normas\.pdf/); assert.ok(pdf.data.subarray(0, 8).toString().startsWith('%PDF-1.4'));
+  } finally { await f.close(); }
+});
+
+test('Consultas particulares: privadas por autor, inaccesibles al administrador y respondidas por gestión', async () => {
+  const f = await fixture();
+  try {
+    const ana = await f.login('vecino.olivos'), luis = await f.login('vecino.olivos2'), marta = await f.login('vecino.plaza');
+    const admin = await f.login('administrador'), manager = await f.login('gestion');
+    const privateDraft = { category: 'Gas', subject: 'Tarifa individual ficticia', message: 'Duda particular sobre mi contrato de gas ficticio' };
+    assert.equal((await f.request('service-requests')).status, 401);
+    assert.equal((await f.request('service-requests?community=olivos', 'POST', privateDraft, admin)).status, 403);
+    assert.equal((await f.request('service-requests?community=plaza', 'POST', privateDraft, ana)).status, 403);
+    assert.equal((await f.request('service-requests?community=olivos', 'POST', { ...privateDraft, category: 'No existe' }, ana)).status, 400);
+    assert.equal((await f.request('service-requests?community=olivos', 'POST', { ...privateDraft, subject: '' }, ana)).status, 400);
+    const created = await f.request('service-requests?community=olivos', 'POST', { ...privateDraft, residentId: luis.user.id, role: 'manager' }, ana);
+    assert.equal(created.status, 201); assert.equal(created.body.residentId, ana.user.id);
+    assert.equal((await f.request('service-requests', 'GET', undefined, ana)).body.length, 1);
+    assert.equal((await f.request('service-requests', 'GET', undefined, luis)).body.length, 0);
+    assert.equal((await f.request('service-requests', 'GET', undefined, marta)).body.length, 0);
+    assert.equal((await f.request('service-requests', 'GET', undefined, admin)).status, 403);
+    const commonState = await f.request('state?community=olivos', 'GET', undefined, admin);
+    assert.equal(commonState.body.tickets.length, 0);
+    assert.ok(!JSON.stringify(commonState.body).includes(privateDraft.subject));
+    const id = created.body.id, patch = { status: 'Resuelta', reply: 'Orientación ficticia de Gestión VecinoIA' };
+    assert.equal((await f.request(`service-requests/${id}?community=olivos`, 'PATCH', patch, admin)).status, 403);
+    assert.equal((await f.request(`service-requests/${id}?community=olivos`, 'PATCH', patch, ana)).status, 403);
+    assert.equal((await f.request(`tickets/${id}?community=olivos`, 'PATCH', patch, admin)).status, 404);
+    assert.equal((await f.request('tickets?community=olivos', 'POST', { ...draft, category: 'Gas' }, ana)).status, 400);
+    assert.equal((await f.request(`service-requests/${id}?community=plaza`, 'PATCH', patch, manager)).status, 404);
+    assert.equal((await f.request(`service-requests/${id}?community=olivos`, 'PATCH', { ...patch, status: 'Incorrecto' }, manager)).status, 400);
+    assert.equal((await f.request(`service-requests/${id}?community=olivos`, 'PATCH', patch, manager)).status, 200);
+    assert.equal((await f.request('service-requests', 'GET', undefined, ana)).body[0].reply, patch.reply);
+    await f.request('service-requests?community=plaza', 'POST', { ...privateDraft, category: 'Luz', subject: 'Luz de Plaza Mayor' }, marta);
+    const inbox = (await f.request('service-requests', 'GET', undefined, manager)).body;
+    assert.equal(inbox.length, 2); assert.ok(inbox.some(r => r.communityName === 'Comunidad Plaza Mayor'));
+    const accountFile = join(f.dir, 'users.json'), accounts = JSON.parse(readFileSync(accountFile, 'utf8'));
+    accounts.find(u => u.role === 'manager').communityIds = ['olivos']; writeFileSync(accountFile, JSON.stringify(accounts));
+    await f.restart(); const again = await f.login('vecino.olivos'), limitedManager = await f.login('gestion');
+    assert.equal((await f.request('service-requests', 'GET', undefined, again)).body[0].status, 'Resuelta');
+    assert.equal((await f.request('service-requests', 'GET', undefined, limitedManager)).body.length, 1);
+    assert.equal((await f.request('service-requests/no-existe?community=plaza', 'PATCH', patch, limitedManager)).status, 403);
+  } finally { await f.close(); }
+});
+
+test('Migración de servicios antiguos sin pérdida de consultas ni exposición al administrador', async () => {
+  const f = await fixture();
+  try {
+    const ana = await f.login('vecino.olivos');
+    await f.request('tickets?community=olivos', 'POST', draft, ana);
+    const file = join(f.dir, 'demo.json'), store = JSON.parse(readFileSync(file, 'utf8'));
+    store.tickets.push({ ...draft, id: 'legacy-service', communityId: 'olivos', residentId: ana.user.id, resident: ana.user.name, category: 'Energía', subject: 'Antigua petición privada', status: 'En revisión', reply: 'Respuesta conservada', createdAt: '2026-10-13T18:00:00Z' });
+    writeFileSync(file, JSON.stringify(store)); await f.restart();
+    const admin = await f.login('administrador'), again = await f.login('vecino.olivos');
+    const common = (await f.request('state?community=olivos', 'GET', undefined, admin)).body;
+    assert.equal(common.tickets.length, 1); assert.ok(!JSON.stringify(common).includes('Antigua petición privada'));
+    const services = (await f.request('service-requests', 'GET', undefined, again)).body;
+    assert.equal(services.length, 1); assert.equal(services[0].id, 'legacy-service'); assert.equal(services[0].category, 'Luz y gas'); assert.equal(services[0].reply, 'Respuesta conservada');
+    await f.restart(); const onceMore = await f.login('vecino.olivos');
+    assert.equal((await f.request('service-requests', 'GET', undefined, onceMore)).body.length, 1);
+  } finally { await f.close(); }
+});
+
+test('Documentos: borrador privado, publicación revisada, consulta con fuente y retirada', async () => {
+  const f = await fixture();
+  try {
+    const admin = await f.login('administrador'), ana = await f.login('vecino.olivos'), manager = await f.login('gestion');
+    const bytes = readFileSync(new URL('../examples/documentos/normas-gimnasio.txt', import.meta.url));
+    assert.equal((await f.upload('normas.txt', bytes, 'Gimnasio', ana)).status, 403);
+    const upload = await f.upload('normas.txt', bytes, 'Gimnasio ficticio', admin);
+    assert.equal(upload.status, 201); assert.equal(upload.body.status, 'draft'); assert.equal(upload.body.processingStatus, 'ready');
+    assert.ok(!('storageName' in upload.body)); assert.ok(!('uploadedBy' in upload.body));
+    const id = upload.body.id, path = `documents/${id}?community=olivos`;
+    let residentState = (await f.request('state?community=olivos', 'GET', undefined, ana)).body;
+    assert.ok(!residentState.documents.some(d => d.id === id)); assert.ok(!('managedDocuments' in residentState)); assert.ok(!('faqs' in residentState));
+    assert.equal((await f.download(`documents/${id}/download?community=olivos`, ana)).status, 404);
+    assert.equal((await f.request('document-requests?community=olivos', 'POST', { documentId: id, channel: 'email', destination: 'vecino@example.com' }, ana)).status, 404);
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish' }, admin)).status, 409);
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish', reviewed: true }, ana)).status, 403);
+    assert.equal((await f.request(path, 'PATCH', { action: 'publish', reviewed: true }, manager)).status, 200);
+    residentState = (await f.request('state?community=olivos', 'GET', undefined, ana)).body;
+    assert.ok(residentState.documents.some(d => d.id === id));
+    const download = await f.download(`documents/${id}/download?community=olivos`, ana);
+    assert.equal(download.status, 200); assert.ok(download.data.equals(bytes));
+    const ask = (await f.request('ask?community=olivos', 'POST', { question: '¿Cuándo cierra el gimnasio?' }, ana)).body;
+    assert.equal(ask.unresolved, false); assert.equal(ask.source.id, id); assert.match(ask.answer, /22:00/);
+    for (const question of ['¿Cuándo cierra el gym?', '¿A qué hora cierra el GYM?', '¿Cuándo cierra el gimnasio?', '¿Cuándo cierra el gym, gimnasio?']) {
+      const result = (await f.request('ask?community=olivos', 'POST', { question }, ana)).body;
+      assert.equal(result.unresolved, false, question); assert.equal(result.source.id, id); assert.match(result.answer, /22:00/);
+    }
+    const otherCommunity = await f.request('ask?community=plaza', 'POST', { question: '¿Cuándo cierra el gym?' }, admin);
+    assert.equal(otherCommunity.body.unresolved, true);
+    const request = await f.request('document-requests?community=olivos', 'POST', { documentId: id, channel: 'email', destination: 'vecino@example.com' }, ana);
+    assert.equal(request.status, 201);
+    assert.equal((await f.request(path, 'PATCH', { action: 'withdraw' }, admin)).status, 200);
+    assert.equal((await f.download(`documents/${id}/download?community=olivos`, ana)).status, 404);
+    assert.equal((await f.request('ask?community=olivos', 'POST', { question: '¿Cuándo cierra el gimnasio?' }, ana)).body.unresolved, true);
+    assert.equal((await f.request('ask?community=olivos', 'POST', { question: '¿Cuándo cierra el gym?' }, ana)).body.unresolved, true);
+    assert.equal((await f.request(`document-requests/${request.body.id}?community=olivos`, 'PATCH', { status: 'Envío confirmado por gestor' }, admin)).status, 409);
+    await f.restart(); const again = await f.login('administrador');
+    assert.equal((await f.request('state?community=olivos', 'GET', undefined, again)).body.managedDocuments.find(d => d.id === id).status, 'withdrawn');
+  } finally { await f.close(); }
+});
+
+test('Carga de PDF y Word, original conservado y permisos por comunidad', async () => {
+  const f = await fixture();
+  try {
+    const admin = await f.login('administrador'), limited = await f.login('admin.olivos'), ana = await f.login('vecino.olivos');
+    const body = 'El gimnasio cierra a las 22:00 todos los días. Solo datos ficticios.';
+    const bytes = documentPDF({ name: 'Los Olivos' }, { title: 'Normas ficticias', body, updated: '2026-10-14' });
+    const pdf = await f.upload('normas.pdf', bytes, 'PDF ficticio', admin);
+    assert.equal(pdf.status, 201); assert.equal(pdf.body.processingStatus, 'ready', pdf.body.processingError); assert.match(pdf.body.body, /gimnasio/);
+    // Eliminar los operadores de texto conservando longitud y offsets del PDF.
+    const blankPdf = Buffer.from(bytes.toString('latin1').replace(/\([^)]*\) Tj/g, match => ' '.repeat(match.length)), 'latin1');
+    const scan = await f.upload('sin-texto.pdf', blankPdf, 'PDF sin texto', admin);
+    assert.equal(scan.body.processingStatus, 'error'); assert.match(scan.body.processingError, /OCR/);
+    const docxBytes = readFileSync(new URL('../examples/documentos/normas-gimnasio.docx', import.meta.url));
+    const word = await f.upload('normas.docx', docxBytes, 'Word ficticio', admin, 'plaza');
+    assert.equal(word.status, 201); assert.equal(word.body.processingStatus, 'ready', word.body.processingError); assert.match(word.body.body, /todos los días/);
+    assert.equal((await f.upload('normas.docx', docxBytes, 'No autorizado', limited, 'plaza')).status, 403);
+    assert.equal((await f.request(`documents/${word.body.id}?community=olivos`, 'PATCH', { action: 'publish', reviewed: true }, admin)).status, 404);
+    assert.equal((await f.download(`documents/${word.body.id}/download?community=plaza`, ana)).status, 403);
+    const original = await f.download(`documents/${word.body.id}/download?community=plaza`, admin);
+    assert.ok(original.data.equals(docxBytes)); assert.match(original.type, /wordprocessingml/);
+    const state = (await f.request('state?community=plaza', 'GET', undefined, admin)).body;
+    assert.ok(!state.managedDocuments.some(d => d.id === pdf.body.id));
+  } finally { await f.close(); }
+});
+
+test('Documentos dañados no publicables, límites de archivo y retirada de fuentes FAQ', async () => {
+  const f = await fixture();
+  try {
+    const admin = await f.login('administrador'), ana = await f.login('vecino.olivos');
+    assert.equal((await f.upload('programa.exe', Buffer.from('contenido ficticio'), 'Archivo', admin)).status, 415);
+    assert.equal((await f.upload('grande.txt', Buffer.alloc(5 * 1024 * 1024 + 1, 65), 'Demasiado grande', admin)).status, 413);
+    assert.equal((await f.upload('vacio.txt', Buffer.alloc(0), 'Vacío', admin)).status, 400);
+    const bad = await f.upload('incorrecto.pdf', Buffer.from('esto no es un PDF'), 'PDF dañado', admin);
+    assert.equal(bad.status, 201); assert.equal(bad.body.processingStatus, 'error'); assert.equal(bad.body.status, 'draft');
+    assert.equal((await f.request(`documents/${bad.body.id}?community=olivos`, 'PATCH', { action: 'publish', reviewed: true }, admin)).status, 409);
+    assert.equal((await f.upload('incorrecto.docx', Buffer.from('esto no es un DOCX'), 'Word dañado', admin)).body.processingStatus, 'error');
+    assert.equal((await f.request('documents/olivos-normas?community=olivos', 'PATCH', { action: 'withdraw' }, admin)).status, 200);
+    assert.equal((await f.request('ask?community=olivos', 'POST', { question: '¿Hay piscina?' }, ana)).body.unresolved, true);
+    const state = (await f.request('state?community=olivos', 'GET', undefined, ana)).body;
+    assert.ok(!JSON.stringify(state).includes('La piscina abre'));
+  } finally { await f.close(); }
+});
+
+const poolModelResponse = () => ({ ok: true, json: async () => ({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify({ sufficient: true, answer: 'La piscina abre de 10:00 a 21:00 en temporada de verano.', citations: [{ document_id: 'olivos-normas', quote: 'La piscina abre de 10:00 a 21:00 durante la temporada de verano.' }] }) }] }] }) });
+
+test('IA: contexto privado por comunidad y límite de veinte consultas por usuario', async () => {
+  let calls = 0;
+  const ai = createAssistant({ apiKey: 'ficticia', fetchImpl: async (_url, options) => {
+    calls++;
+    const context = JSON.parse(JSON.parse(options.body).input[0].content[0].text);
+    assert.equal(context.community.id, 'olivos');
+    assert.ok(context.sources.every(source => source.document_id.startsWith('olivos-')));
+    assert.ok(!JSON.stringify(context).includes('Consulta particular privada de prueba'));
+    return poolModelResponse();
+  } });
+  const f = await fixture(ai);
+  try {
+    const ana = await f.login('vecino.olivos');
+    await f.request('service-requests?community=olivos', 'POST', { category: 'Gas', subject: 'Consulta particular privada de prueba', message: 'No debe enviarse al asistente' }, ana);
+    assert.equal((await f.request('ask?community=plaza', 'POST', { question: 'Piscina' }, ana)).status, 403);
+    assert.equal(calls, 0);
+    for (let i = 0; i < 20; i++) {
+      const answer = await f.request('ask?community=olivos', 'POST', { question: '¿Puedo bañarme por la tarde?' }, ana);
+      assert.equal(answer.status, 200); assert.equal(answer.body.engine, 'openai'); assert.equal(answer.body.sources[0].id, 'olivos-normas');
+    }
+    assert.equal((await f.request('ask?community=olivos', 'POST', { question: '¿Puedo bañarme por la tarde?' }, ana)).status, 429);
+    assert.equal(calls, 20);
+  } finally { await f.close(); }
+});
+
+test('IA: una fuente retirada durante la respuesta no se devuelve al vecino', async () => {
+  let release, started;
+  const waiting = new Promise(resolve => { started = resolve; });
+  const gate = new Promise(resolve => { release = resolve; });
+  const ai = createAssistant({ apiKey: 'ficticia', fetchImpl: async () => { started(); await gate; return poolModelResponse(); } });
+  const f = await fixture(ai);
+  try {
+    const ana = await f.login('vecino.olivos'), admin = await f.login('administrador');
+    const pending = f.request('ask?community=olivos', 'POST', { question: 'Piscina' }, ana);
+    await waiting;
+    assert.equal((await f.request('ask?community=olivos', 'POST', { question: 'Otra pregunta' }, ana)).status, 429);
+    assert.equal((await f.request('documents/olivos-normas?community=olivos', 'PATCH', { action: 'withdraw' }, admin)).status, 200);
+    release();
+    const answer = await pending;
+    assert.equal(answer.body.aiStatus, 'source_withdrawn'); assert.equal(answer.body.source, null); assert.equal(answer.body.unresolved, true);
+  } finally { release(); await f.close(); }
+});

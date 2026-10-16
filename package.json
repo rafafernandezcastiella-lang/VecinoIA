@@ -1,0 +1,19 @@
+{
+  "name": "vecinoia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portal demostrativo para comunidades de propietarios",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "5.6.205"
+  }
+}

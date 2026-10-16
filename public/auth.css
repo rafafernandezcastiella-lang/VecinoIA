@@ -1,0 +1,41 @@
+[hidden] { display: none !important; }
+.document-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.outside-heading { color: white; text-shadow: 0 1px 5px #002344; }
+.delivery-confirm-form { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px; }
+.form .confirm-checkbox { display: flex; align-items: center; gap: 10px; }
+.confirm-checkbox input { width: auto; }
+.private-reply-form { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px; }
+.private-routing { color: var(--navy); background: var(--soft); padding: 12px; border-radius: 8px; font-size: 12px; margin: 0; }
+.inbox-filter { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.inbox-filter label { font-weight: 600; color: var(--navy); }
+.inbox-filter select { padding: 10px 12px; border: 1px solid #b6c5d4; border-radius: 8px; color: var(--navy); background: white; }
+.inbox-filter span { color: var(--muted); }
+.document-preview { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 360px; overflow: auto; background: #f1f5fa; color: var(--ink); padding: 18px; border-radius: 8px; font: 14px/1.65 Aptos, 'Segoe UI', sans-serif; }
+.document-status-form { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.processing-error { background: #fff0f0; color: #8b2424 !important; padding: 14px; border-radius: 8px; }
+.knowledge-card input[type='checkbox'] { flex-shrink: 0; }
+.assistant-notice { padding: 12px; background: #edf4fb; color: var(--navy); border-left: 3px solid var(--accent); font-size: 12px; white-space: normal; }
+.login-screen { min-height: calc(100vh - 34px); display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 70px; max-width: 1240px; margin: auto; padding: 65px 42px; }
+.login-intro { color: white; }
+.login-intro .eyebrow { color: white; background: #002d5ae8; padding: 10px 14px; display: inline-block; border-radius: 6px; }
+.login-intro h1 { font-size: clamp(42px, 5vw, 68px); line-height: 1.07; letter-spacing: -2px; margin: 28px 0 22px; }
+.login-intro p { max-width: 410px; font-size: 18px; text-shadow: 0 1px 5px #002d5a; }
+.login-photo-caption { display: inline-block; font-size: 12px; background: #002d5ade; padding: 12px 16px; border-radius: 6px; margin-top: 28px; }
+.login-card { background: white; padding: 36px; border-top: 4px solid var(--accent); border-radius: 15px; box-shadow: 0 10px 50px #00182d33; }
+.login-kicker { font-size: 10px; color: var(--accent); font-weight: 700; letter-spacing: 1.5px; }
+.login-card h2 { color: var(--navy); font-size: 29px; margin: 18px 0 12px; }
+.login-card > p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+#login-form .btn { width: 100%; }
+#login-error { background: #fff0f0; color: #8b2424; padding: 12px; border-radius: 6px; margin: 0; font-size: 13px; }
+.demo-credentials { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 20px; color: var(--navy); font-size: 12px; }
+.demo-credentials p { color: var(--muted); }
+.demo-credentials dt { font-weight: 700; margin-top: 14px; }
+.demo-credentials dd { margin: 5px 0; font-size: 12px; overflow-wrap: anywhere; user-select: text; }
+.session-actions { display: flex; align-items: center; gap: 18px; font-size: 12px; }
+.session-actions .btn { padding: 9px 12px; font-size: 12px; }
+@media (max-width: 800px) { .login-screen { grid-template-columns: 1fr; padding: 34px 20px; gap: 25px; max-width: 570px; }.login-intro h1 { font-size: 42px; margin: 20px 0 16px; }.login-intro p { font-size: 15px; }.login-photo-caption { display: none; }.login-card { padding: 28px 22px; }.session-actions { gap: 10px; }.session-actions > span { max-width: 85px; font-size: 11px; }.session-actions .btn { font-size: 11px; padding: 8px; } }
+.advice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; align-items: start; }
+.advice-card { min-width: 0; }
+.advice-card h2 { font-size: 1.35rem; }
+.advice-body { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 20px; }
+#advice-editor { margin-top: 24px; }

@@ -1,0 +1,163 @@
+/* Paleta del Manual de identidad visual ANPARA, página 5.
+   Las superficies suaves son tintas de la paleta, no colores de marca nuevos. */
+:root {
+  --accent: #0072ce;
+  --navy: #002d5a;
+  --silver: #c0c0c0;
+  --ink: #333333;
+  --muted: #5c6670;
+  --line: #d6dde5;
+  --paper: #ffffff;
+  --soft: #edf4fb;
+  --community-photo: none;
+  --community-photo-position: center;
+  font-family: Aptos, Inter, "Segoe UI", sans-serif;
+  background: var(--navy);
+}
+body {
+  background-color: var(--navy);
+  background-image: linear-gradient(90deg, rgba(0, 24, 49, .76), rgba(0, 32, 64, .26)), var(--community-photo);
+  background-position: center, var(--community-photo-position);
+  background-size: cover;
+  background-attachment: fixed;
+}
+.demo-banner {
+  background: #002344;
+  color: #dce9f7;
+  padding: 8px 16px;
+  font-size: 11px;
+  letter-spacing: .25px;
+  border-bottom: 1px solid rgba(192, 192, 192, .18);
+}
+.layout { grid-template-columns: 260px 1fr; }
+.sidebar {
+  background: rgba(0, 45, 90, .97);
+  color: white;
+  border-right: 1px solid rgba(192, 192, 192, .2);
+  padding: 34px 24px;
+  gap: 30px;
+}
+.brand { color: white; font-size: 29px; }
+.brand > span:last-child { color: #66a3e0; }
+.brand-mark { background: var(--accent); border: 1px solid #66a3e0; border-radius: 11px; }
+.brand-caption { color: #c0d5ea; font-size: 9px; letter-spacing: 1.5px; margin-top: -21px; }
+.community-switch label { color: #bcd2e8; }
+.community-switch select { background: #fff; color: var(--navy); border-color: var(--silver); padding: 12px 8px; }
+nav button { color: #d7e4f2; font-weight: 500; padding: 14px; border: 1px solid transparent; }
+nav button.active { background: var(--accent); color: white; border-color: #66a3e0; }
+nav button:hover { background: rgba(102, 163, 224, .18); color: white; }
+nav button.active:hover { background: var(--accent); }
+.avatar { background: #174570; color: white; border: 1px solid #6684a1; }
+.sidebar-bottom { border-top: 1px solid rgba(192, 192, 192, .25); padding-top: 24px; }
+.sidebar-bottom small { color: #c0d5ea; }
+.topbar {
+  background: rgba(255, 255, 255, .98);
+  height: 75px;
+  color: var(--navy);
+  border-bottom: 3px solid var(--accent);
+}
+#community-name { font-weight: 700; }
+.role-label select { color: var(--navy); }
+main { max-width: 1320px; padding: 38px 44px; }
+.heading {
+  padding: 25px 28px;
+  border-radius: 14px;
+  background: rgba(0, 45, 90, .94);
+  border: 1px solid rgba(192, 192, 192, .35);
+  color: white;
+}
+.heading .eyebrow { color: #d6e6f7; }
+.heading h1 { color: white; font-weight: 650; letter-spacing: -1px; }
+.heading .lead { color: #e0eaf5; margin-bottom: 0; }
+.welcome { min-height: 395px; position: relative; }
+.welcome .heading { background: transparent; border: 0; padding: 0; margin: 0 0 26px; }
+.welcome h1 { font-size: clamp(30px, 3.3vw, 48px); font-weight: 650; line-height: 1.14; }
+.welcome .heading .eyebrow { display: inline-block; background: rgba(0, 45, 90, .86); padding: 8px 12px; border-radius: 5px; color: white; letter-spacing: 1.4px; }
+.welcome .lead { text-shadow: 0 1px 4px #002344; }
+.hero {
+  background: transparent;
+  padding: 0;
+  margin: 0 0 30px;
+  min-height: 230px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(200px, 1fr);
+  align-items: end;
+  border-radius: 0;
+}
+.hero > div:first-child { max-width: 530px; padding: 22px 25px; background: rgba(0, 34, 69, .90); border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; }
+.hero h2 { color: white; font-size: clamp(24px, 2.4vw, 32px); line-height: 1.2; margin: 12px 0; font-weight: 550; }
+.hero .eyebrow { color: #d2e5f8; font-size: 10px; }
+.hero p { color: #e6edf7; line-height: 1.7; max-width: 450px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { padding: 12px 18px; border-radius: 7px; box-shadow: 0 3px 9px rgba(0, 45, 90, .08); }
+.btn.photo-button { background: white; color: var(--navy); border-color: white; }
+.btn.secondary { color: var(--navy); border-color: #b4c8de; }
+.community-plaque {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(0, 34, 69, .9);
+  border: 1px solid rgba(192, 192, 192, .4);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  max-width: 340px;
+}
+.plaque-icon { font-size: 35px; color: #c5dcf3; }
+.community-plaque small { display: block; font-size: 9px; color: #d3e4f6; letter-spacing: 1.3px; margin-bottom: 7px; }
+.community-plaque strong { display: block; font-size: 15px; font-weight: 600; }
+.community-plaque div > span { display: block; font-size: 11px; margin-top: 6px; color: #d3e4f6; }
+.stats { margin: 0 0 28px; gap: 18px; }
+.stat { background: rgba(255, 255, 255, .98); border-color: white; border-top: 3px solid var(--accent); padding: 20px 24px; border-radius: 10px; box-shadow: 0 4px 18px #00234412; }
+.stat strong { color: var(--navy); font-size: 29px; }
+.stat span { color: #5c6670; }
+.card { background: rgba(255, 255, 255, .98); border: 1px solid #fff; border-radius: 12px; box-shadow: 0 5px 24px rgba(0, 25, 50, .1); }
+.card h2, .card h3, .card summary { color: var(--navy); }
+.columns > section > h2, .section-head h2 { color: white; text-shadow: 0 1px 5px #002344; }
+.tag { color: var(--navy); background: #e7f0fa; border: 1px solid #d3e2f2; font-size: 10px; letter-spacing: .3px; }
+.meeting-date { color: var(--navy); }
+.bubble { background: rgba(255, 255, 255, .98); }
+.bubble.user { background: #edf4fb; }
+.note { background: #edf4fb; border-left: 3px solid var(--accent); color: var(--navy); }
+.form input, .form textarea, .form select, .ask-row input { border-color: #b6c5d4; }
+.form label { color: var(--navy); }
+.form input:focus, .form textarea:focus, .form select:focus, .ask-row input:focus { border-color: var(--accent); }
+.service-icon { color: var(--accent); background: #edf4fb; }
+.suggestions button { color: var(--navy); }
+.empty { border-color: #c0c0c0; background: #fff; }
+footer { background: rgba(0, 35, 70, .96); color: #d8e5f2; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid rgba(192, 192, 192, .3); font-size: 11px; }
+#notice { background: var(--navy); border: 1px solid #66a3e0; }
+:focus-visible { outline: 3px solid #66a3e0; outline-offset: 3px; }
+@media (max-width: 1150px) {
+  .layout { grid-template-columns: 225px 1fr; }
+  .sidebar { padding: 28px 18px; }
+  main { padding: 30px; }
+  .hero { grid-template-columns: 1fr; gap: 18px; }
+  .community-plaque { justify-self: start; margin: 0; }
+}
+@media (max-width: 700px) {
+  .layout { display: block; }
+  .sidebar { padding: 20px 17px 12px; gap: 20px; }
+  .brand-caption { margin-top: -13px; font-size: 8px; }
+  .sidebar-bottom { display: none; }
+  nav button { padding: 10px 12px; }
+  .topbar { height: auto; padding: 14px 17px; }
+  main { padding: 26px 17px; }
+  .heading { padding: 22px 20px; }
+  .welcome { min-height: 0; }
+  .welcome h1 { font-size: 33px; }
+  .welcome .lead { font-size: 14px; }
+  .hero > div:first-child { padding: 22px 20px; }
+  .hero-actions { display: grid; }
+  .hero-actions .btn { width: 100%; }
+  .community-plaque { width: 100%; max-width: none; }
+  .stats { gap: 8px; }
+  .stat { padding: 16px 10px; }
+  .stat strong { font-size: 24px; }
+  .stat span { font-size: 11px; }
+  .card { padding: 21px; }
+  footer { padding: 22px 17px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, nav button { transition: background-color .15s, box-shadow .15s; }
+}
