@@ -148,3 +148,9 @@ Segunda prueba superada tras despliegue `7315a86`: revocación de sesión confir
 El usuario pide: «Quiero que el guion este mas claro, marca donde se debe ir pinchando cada vez, el texto que hay que decir, mucho mas especificado».
 
 Acción: reescritura del guion con diez escenas, localización de controles contrastada con la interfaz, credenciales ficticias para dos cambios de usuario, textos para copiar, narración literal y acciones separadas. Se usa una sola pregunta de IA y el documento del gimnasio ya publicado; no se retiran fuentes ni se envían mensajes reales al ensayar. Se genera una versión HTML imprimible con narración destacada. Los tiempos son orientativos hasta ensayarlo con el usuario. La carpeta y los dos Google Docs han confirmado previamente permisos de lectura para cualquiera con enlace.
+
+## 022 — Limpieza de consultas antes de grabar
+
+El usuario indica que ha probado todo y pide: «borra todas las consultas, para empezar de cero y no confundirme con consultas ya realizadas».
+
+Se identifica la web pública como destino y se obtiene copia local excluida de Git de tres consultas comunitarias y dos particulares. Se prepara una operación puntual limitada al proyecto y servicio Railway del usuario, con backup en el volumen y marcador persistente para que no se repita. Solo vacía tickets y serviceRequests; documentos, publicaciones y solicitudes documentales se conservan. La prueba verifica backup íntegro y que las consultas nuevas sobrevivan a otra invocación. Pendiente confirmar el resultado remoto tras desplegar.
