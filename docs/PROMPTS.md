@@ -126,3 +126,5 @@ El 15 de octubre el usuario indica «clave guardada». Se confirma únicamente s
 ## 018 — Primera comprobación pública en Railway
 
 16 de octubre de 2026. El usuario configura variables, comunica creación de volumen y facilita `https://vecinoia-production.up.railway.app`. Portada y healthcheck responden HTTP 200; archivos sensibles no son accesibles por HTTP. La prueba inicial de login recibe 403 por comparación HTTP/HTTPS detrás del proxy. Se corrige el origen permitido en producción para usar HTTPS, sin confiar en cabeceras de protocolo enviadas por el cliente. Se comprueba aceptación de origen HTTPS del mismo host y rechazo de otros orígenes y HTTP en producción. Pendiente nueva comprobación pública tras desplegar la corrección.
+
+Tras el despliegue de `8e40286`, se confirman login de tres roles, separación de comunidades, canal particular inaccesible para administración y respuesta de IA de piscina con fuente desde la URL pública. Las sesiones se cierran sin crear datos de contenido. Veintiuna pruebas locales aprobadas tras la corrección. La conservación pública de archivos después de reiniciar sigue pendiente de prueba.

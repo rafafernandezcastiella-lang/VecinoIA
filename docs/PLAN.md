@@ -6,7 +6,7 @@ Las bases originales locales se han contrastado el 16 de octubre: cierre el 19 d
 
 Portal de dos comunidades, identidad ANPARA, usuarios y permisos, incidencias, documentos con revisión y publicación, descargas y preparación manual de envío. Consultas privadas atendidas por gestión. IA real con fuentes comprobada. Consejos, ayudas y servicios con ciclo editorial. Veinte pruebas automatizadas aprobadas y recorridos en escritorio y móvil. El usuario confirma las pruebas de IA y de la nueva sección.
 
-Preparados documentación local, registro de prompts y guion de demostración. Código subido a GitHub el 16 de octubre en la rama `codex/hackathon`. Aún no hay aplicación pública, vídeo ni entregables en Google Drive.
+Preparados documentación local, registro de prompts y guion de demostración. Código en GitHub y demo pública en https://vecinoia-production.up.railway.app/. Acceso con tres roles e IA real verificados el 16 de octubre. Pendientes persistencia tras reinicio público, vídeo y entregables Google Drive.
 
 ## Trabajo restante
 

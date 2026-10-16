@@ -80,3 +80,7 @@ Recorrido en Edge con datos temporales: creación de ficha de Gas, publicación,
 ## Preparación para alojamiento — 16 de octubre
 
 Veintiuna pruebas aprobadas. La nueva prueba usa DATA_DIR temporal, comprueba healthcheck sin datos sensibles, cookie Secure en modo producción y persistencia de una ficha después de reiniciar. Se excluyen caché pnpm y contexto local de Git. Escaneo de patrones de secretos en candidatos a publicación sin mostrar valores. La imagen Docker no se ha construido: falta Docker en este ordenador. No se ha validado ningún alojamiento público.
+
+## Web pública de Railway — 16 de octubre
+
+https://vecinoia-production.up.railway.app/ y healthcheck responden 200. La primera prueba de login detectó comparación de origen HTTP frente al HTTPS público; corregida en `8e40286`. Se repiten las veintiuna pruebas locales con éxito y la prueba pública confirma login 200 para vecino, administrador y gestión, cookies Secure, una comunidad para el vecino y dos para personal, cuatro fichas publicadas, rechazo 403 a otra comunidad y rechazo 403 del canal particular para administración. La pregunta de piscina a las 20:00 obtiene IA real con fuente. `.env` y `data/demo.json` no se sirven públicamente (404). Sesiones de comprobación cerradas. No se crearon consultas ni contenidos durante esta verificación. Persistencia pública tras reinicio aún pendiente.
