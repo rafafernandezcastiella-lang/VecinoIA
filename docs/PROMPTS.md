@@ -136,3 +136,5 @@ Tras el despliegue de `8e40286`, se confirman login de tres roles, separación d
 Resultado: se observa reinicio por revocación de sesión; el registro publicado no se conserva después. Prueba fallida. Se solicita revisión visual del volumen y de su asociación/ruta en Railway. No se presenta la persistencia como conseguida. El resultado se registra localmente sin otro despliegue hasta corregir la configuración.
 
 La captura posterior muestra `vecinoia-volume` asociado y un cambio pendiente. Se indica aplicar Deploy; el usuario confirma «online». Se inicia una segunda prueba con publicación y descarga idéntica del ejemplo del gimnasio, antes de otro despliegue controlado. El fallo anterior se conserva como historial, no como resultado de esta segunda prueba.
+
+Segunda prueba superada tras despliegue `7315a86`: revocación de sesión confirma reinicio y una nueva sesión encuentra el mismo documento publicado; los bytes descargados conservan el mismo SHA-256. Se actualiza el estado de la documentación. El ejemplo queda disponible para el ensayo. El resultado no implica validación de backups ni continuidad del plan durante toda la evaluación.

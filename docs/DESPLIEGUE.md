@@ -4,7 +4,7 @@
 
 ## Preparación técnica
 
-Incidencia detectada el 16 de octubre: la prueba con el TXT ficticio del gimnasio no conserva el documento tras el despliegue `9264690`, aunque antes se publicó y descargó correctamente. El almacenamiento persistente público no está validado y la prueba ha fallado. Comprobar asociación del volumen al servicio y entorno correctos, Mount Path y DATA_DIR antes de nuevas cargas o despliegues. No se ha determinado todavía qué ajuste concreto está mal.
+Incidencia inicial resuelta el 16 de octubre: la captura mostró un volumen asociado con un cambio pendiente de aplicar. Tras aplicar ese cambio y confirmar Online, se repitió la carga y publicación del TXT del gimnasio. El despliegue `7315a86` reinició la aplicación y se comprobó que conserva el mismo registro publicado y archivo original idéntico. La prueba inicial fallida queda documentada en VALIDACION.md. No sustituye pruebas de recuperación de copias de seguridad ni acredita conservación tras eliminar el volumen o expirar el plan.
 
 - Node 24 y dependencias fijadas por `pnpm-lock.yaml`; arranque `node server.mjs`.
 - `Dockerfile` para servicios que admitan contenedores. Docker no está disponible en este ordenador; la aplicación ya responde desde Railway.
@@ -15,6 +15,8 @@ Incidencia detectada el 16 de octubre: la prueba con el TXT ficticio del gimnasi
 - Servir con HTTPS; las cookies de producción llevan Secure. El disco debe conservar JSON, usuarios y subcarpeta de documentos. Comprobar permisos de escritura del volumen montado.
 - Railway monta volúmenes como root. Se indicó configurar `RAILWAY_RUN_UID=0` junto con `DATA_DIR=/var/lib/vecinoia` para permitir la escritura con esta imagen. El usuario confirma despliegue Online y volumen creado; pendiente prueba de conservación tras reiniciar.
 - La instancia pública inicial tendrá datos de ejemplo nuevos: los documentos locales subidos no viajan con el código. Cargar y publicar otra vez los ejemplos necesarios para la demo, o preparar una migración explícita solo de datos ficticios.
+
+La prueba pública de persistencia ya está superada. Las referencias anteriores a comprobación pendiente describen los pasos iniciales; el ejemplo del gimnasio se conserva publicado tras el reinicio. Quedan pendientes continuidad del plan durante la evaluación, copias de seguridad y pruebas finales de todos los recorridos del vídeo.
 
 ## Repositorio
 

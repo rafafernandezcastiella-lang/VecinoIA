@@ -39,7 +39,7 @@ node --test
 
 La identificación y los permisos ya funcionan con cuentas ficticias. Las claves de demo se muestran deliberadamente en la pantalla de acceso. No introducir datos personales ni usar contraseñas reales. No hay todavía provisión de usuarios, recuperación de contraseña o revisión para clientes reales. La IA utiliza fuentes publicadas de la comunidad y valida la presencia literal de sus citas. Esto no garantiza la corrección de cada afirmación; cada pregunta se procesa de forma independiente y con contexto limitado. Ante fallos se conserva la búsqueda documental. Las fichas editoriales no se incorporan automáticamente a las fuentes del asistente. No se realiza OCR y los archivos con errores no se publican. El catálogo no envía solicitudes a proveedores ni formaliza contratos. Las consultas particulares se atienden desde Gestión VecinoIA y no son visibles al administrador.
 
-Demo pública: https://vecinoia-production.up.railway.app/. Acceso e IA comprobados el 16 de octubre de 2026. El código está en GitHub; los entregables de Google Drive siguen pendientes. La persistencia JSON requiere disco persistente y una sola instancia; pendiente comprobar conservación tras reinicio en el alojamiento.
+Demo pública: https://vecinoia-production.up.railway.app/. Acceso, IA y conservación documental después de un nuevo despliegue comprobados el 16 de octubre de 2026. El código está en GitHub; los entregables de Google Drive siguen pendientes. La persistencia JSON requiere disco persistente y una sola instancia.
 
 ## Documentación
 
