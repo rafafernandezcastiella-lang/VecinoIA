@@ -132,3 +132,7 @@ Tras el despliegue de `8e40286`, se confirman login de tres roles, separación d
 ## 019 — Conservación documental en Railway
 
 16 de octubre de 2026. El usuario acepta continuar con la prueba de persistencia. Se carga y publica en la web pública el ejemplo ficticio de normas del gimnasio, tras revisar el texto procesado; se verifica descarga idéntica al original. Se prepara un nuevo despliegue para comprobar conservación del registro, publicación y bytes del archivo después de reiniciar. No se alteran documentos anteriores del usuario.
+
+Resultado: se observa reinicio por revocación de sesión; el registro publicado no se conserva después. Prueba fallida. Se solicita revisión visual del volumen y de su asociación/ruta en Railway. No se presenta la persistencia como conseguida. El resultado se registra localmente sin otro despliegue hasta corregir la configuración.
+
+La captura posterior muestra `vecinoia-volume` asociado y un cambio pendiente. Se indica aplicar Deploy; el usuario confirma «online». Se inicia una segunda prueba con publicación y descarga idéntica del ejemplo del gimnasio, antes de otro despliegue controlado. El fallo anterior se conserva como historial, no como resultado de esta segunda prueba.

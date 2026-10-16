@@ -4,6 +4,8 @@
 
 ## Preparación técnica
 
+Incidencia detectada el 16 de octubre: la prueba con el TXT ficticio del gimnasio no conserva el documento tras el despliegue `9264690`, aunque antes se publicó y descargó correctamente. El almacenamiento persistente público no está validado y la prueba ha fallado. Comprobar asociación del volumen al servicio y entorno correctos, Mount Path y DATA_DIR antes de nuevas cargas o despliegues. No se ha determinado todavía qué ajuste concreto está mal.
+
 - Node 24 y dependencias fijadas por `pnpm-lock.yaml`; arranque `node server.mjs`.
 - `Dockerfile` para servicios que admitan contenedores. Docker no está disponible en este ordenador; la aplicación ya responde desde Railway.
 - `HOST=0.0.0.0`, `NODE_ENV=production`, `PORT` definido por el alojamiento y `DATA_DIR` apuntando a un disco persistente escribible por el proceso. No usar la carpeta efímera del contenedor para datos que deban conservarse.
