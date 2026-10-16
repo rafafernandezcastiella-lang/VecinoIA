@@ -142,3 +142,9 @@ Segunda prueba superada tras despliegue `7315a86`: revocación de sesión confir
 ## 020 — Documentos de entrega
 
 16 de octubre de 2026. Tras confirmar la persistencia documental pública, el usuario acepta preparar los dos Google Docs. Se crean por separado documentación técnica e historial, se añaden capturas de la web pública y se revisa el contenido. Quedan pendientes vídeo, permisos públicos de entrega, acceso del jurado al repositorio y envío del formulario. El uso de las herramientas de Drive y Docs se limita a preparar documentos; no se genera lógica de la aplicación con ellas.
+
+## 021 — Guion de grabación detallado
+
+El usuario pide: «Quiero que el guion este mas claro, marca donde se debe ir pinchando cada vez, el texto que hay que decir, mucho mas especificado».
+
+Acción: reescritura del guion con diez escenas, localización de controles contrastada con la interfaz, credenciales ficticias para dos cambios de usuario, textos para copiar, narración literal y acciones separadas. Se usa una sola pregunta de IA y el documento del gimnasio ya publicado; no se retiran fuentes ni se envían mensajes reales al ensayar. Se genera una versión HTML imprimible con narración destacada. Los tiempos son orientativos hasta ensayarlo con el usuario. La carpeta y los dos Google Docs han confirmado previamente permisos de lectura para cualquiera con enlace.
