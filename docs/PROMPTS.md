@@ -118,3 +118,7 @@ El 15 de octubre el usuario indica «clave guardada». Se confirma únicamente s
 ## 016 — Preparación para publicar y creación de cuentas
 
 16 de octubre de 2026. El usuario acepta continuar y aclara que no tiene GitHub ni alojamiento, solicitando guía. Se contrasta el PDF original local de las bases y se confirma cierre y entregables. Se prepara DATA_DIR para disco persistente, healthcheck sin secretos, plantilla Docker aún sin construir y exclusiones de publicación. Veintiuna pruebas aprobadas; escaneo preventivo de candidatos a repositorio sin imprimir valores de claves. No se crean cuentas, contratan servicios ni publica código todavía. El siguiente paso del usuario es crear y verificar una cuenta gratuita de GitHub.
+
+## 017 — Primera subida a GitHub
+
+16 de octubre de 2026. El usuario confirma la cuenta `rafafernandezcastiella-lang`, crea el repositorio VecinoIA siguiendo las instrucciones de visibilidad privada y autoriza Git Credential Manager. Se revisan los archivos preparados y se excluyen claves, datos locales, cachés y contexto pegado. Se crea el primer commit `342b0c4` sin reconstruir ni falsear commits anteriores y se sube la rama `codex/hackathon`. La referencia remota coincide con la local. Se actualiza la documentación; el alojamiento público sigue pendiente.

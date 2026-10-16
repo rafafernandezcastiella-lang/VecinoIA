@@ -1,6 +1,6 @@
 # Preparación para publicar
 
-16 de octubre de 2026. No hay aplicación pública ni repositorio remoto todavía. El usuario necesita crear las cuentas y solicita guía. El servidor sigue disponible localmente.
+16 de octubre de 2026. Código subido a GitHub en `rafafernandezcastiella-lang/VecinoIA`, rama `codex/hackathon`, tras autorización del usuario en Git Credential Manager. Primera versión: `342b0c4`, verificada contra la referencia remota. No hay aplicación pública todavía; el servidor sigue disponible localmente. La visibilidad privada fue la opción indicada al crear el repositorio; comprobarla en GitHub antes de entregar.
 
 ## Preparación técnica
 
@@ -19,6 +19,6 @@
 
 ## Pendientes para el usuario
 
-Crear cuenta de GitHub; elegir nombre y visibilidad del repositorio; elegir alojamiento y aceptar sus condiciones y coste si lo hay. No se ha contratado ningún servicio. Configurar allí un disco persistente y secreto de API. Tras publicar, probar acceso desde otro equipo, tres roles, respuesta de IA, carga documental y persistencia después de reiniciar.
+Cuenta y repositorio GitHub creados. Pendiente elegir alojamiento y aceptar sus condiciones y coste si lo hay. No se ha contratado ningún servicio. Configurar allí un disco persistente y secreto de API. Tras publicar, probar acceso desde otro equipo, tres roles, respuesta de IA, carga documental y persistencia después de reiniciar. Si GitHub sigue privado, conceder acceso al jurado según las bases antes de entregar.
 
 Referencias técnicas: [Docker para Node.js](https://docs.docker.com/guides/nodejs/) y [variables de entorno de Node.js](https://nodejs.org/api/process.html#processenv).

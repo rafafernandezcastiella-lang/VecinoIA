@@ -6,7 +6,7 @@ Las bases originales locales se han contrastado el 16 de octubre: cierre el 19 d
 
 Portal de dos comunidades, identidad ANPARA, usuarios y permisos, incidencias, documentos con revisión y publicación, descargas y preparación manual de envío. Consultas privadas atendidas por gestión. IA real con fuentes comprobada. Consejos, ayudas y servicios con ciclo editorial. Veinte pruebas automatizadas aprobadas y recorridos en escritorio y móvil. El usuario confirma las pruebas de IA y de la nueva sección.
 
-Preparados documentación local, registro de prompts y guion de demostración. Aún no hay aplicación pública, repositorio remoto, vídeo ni entregables en Google Drive.
+Preparados documentación local, registro de prompts y guion de demostración. Código subido a GitHub el 16 de octubre en la rama `codex/hackathon`. Aún no hay aplicación pública, vídeo ni entregables en Google Drive.
 
 ## Trabajo restante
 
@@ -28,7 +28,7 @@ Objetivo: publicar y verificar el 17, cerrar documentación y vídeo el 18, revi
 
 - [x] Contrastar copia local de bases, fecha y duración del vídeo.
 - [ ] Obtener formulario y revisar posibles actualizaciones de la organización.
-- [ ] Publicar código excluyendo claves, datos y archivos locales.
+- [x] Subir código a GitHub excluyendo claves, datos y archivos locales.
 - [ ] Desplegar con almacenamiento persistente y clave exclusivamente en servidor.
 - [ ] Probar URL pública con tres roles y conservación de archivos tras reiniciar.
 - [ ] Crear carpeta y documentos finales según bases y revisar permisos del jurado.
