@@ -92,3 +92,7 @@ https://vecinoia-production.up.railway.app/ y healthcheck responden 200. La prim
 ## Segunda prueba pública de persistencia — superada
 
 Tras ver el volumen asociado con un cambio pendiente, se indica aplicar Deploy y el usuario confirma Online. Se carga y revisa el ejemplo ficticio del gimnasio; se publica el documento `6d3e0db8-cce9-4beb-9856-b7e2ea871ce2` y su descarga coincide con el archivo local. Se activa despliegue `7315a86` y se observa revocación de la sesión previa, confirmando reinicio. Con una sesión nueva, el documento conserva identificador y estado publicado y el SHA-256 de la descarga coincide con el previo. Prueba superada sin alterar otros documentos. Esto acredita conservación del JSON y de ese archivo durante el despliegue; no acredita restauración de backups ni retención después de cancelar o expirar el alojamiento.
+
+## Limpieza de ensayos autorizada por el usuario
+
+Se respaldan las tres consultas comunitarias y dos particulares y se vacían una sola vez al desplegar `788a987`. Comprobación remota posterior: cero registros de ambos tipos, con documentos y fichas conservados en ambas comunidades. La prueba local comprueba copia original íntegra, conservación de otras colecciones y ausencia de un segundo borrado. Veintidós pruebas pasan. Se retira la llamada de limpieza del arranque tras confirmar el resultado. Los backups quedan fuera del repositorio y de las rutas públicas.
