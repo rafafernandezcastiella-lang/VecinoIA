@@ -38,6 +38,39 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Eliminar completadas solo borra resueltas de la comunidad autorizada y persiste', async () => {
+  const f = await fixture();
+  try {
+    let admin = await f.login('admin.olivos');
+    const resident = await f.login('vecino.olivos'), manager = await f.login('gestion');
+    const create = async (community, subject, session = resident) => (await f.request(`tickets?community=${community}`, 'POST', { ...draft, subject }, session)).body;
+    const pending = await create('olivos', 'Pendiente');
+    const active = await create('olivos', 'En curso');
+    const done = await create('olivos', 'Terminada');
+    const other = await create('plaza', 'Otra comunidad', manager);
+    const change = (item, community, status, session) => f.request(`tickets/${item.id}?community=${community}`, 'PATCH', { status, reply: 'Respuesta ficticia' }, session);
+    await change(active, 'olivos', 'En revisión', admin); await change(done, 'olivos', 'Resuelta', admin); await change(other, 'plaza', 'Resuelta', manager);
+    await f.request('service-requests?community=olivos', 'POST', { subject: 'Particular', message: 'Consulta privada ficticia', category: 'Gas' }, resident);
+    const path = 'tickets/clear-completed?community=olivos';
+    assert.equal((await f.request(path, 'POST', {})).status, 401);
+    assert.equal((await f.request(path, 'POST', {}, resident)).status, 403);
+    assert.equal((await f.request(path, 'POST', {}, admin, {'X-CSRF-Token':'incorrecto'})).status, 403);
+    assert.equal((await f.request('tickets/clear-completed?community=plaza', 'POST', {}, admin)).status, 403);
+    assert.deepEqual((await f.request(path, 'POST', {}, admin)).body, {removed:1});
+    let state = (await f.request('state?community=olivos', 'GET', undefined, admin)).body;
+    assert.deepEqual(new Set(state.tickets.map(t=>t.id)), new Set([pending.id, active.id]));
+    assert.ok(state.documents.length); assert.ok(state.advice.length);
+    const plaza = (await f.request('state?community=plaza', 'GET', undefined, manager)).body;
+    assert.ok(plaza.tickets.some(t=>t.id===other.id));
+    assert.equal((await f.request('service-requests', 'GET', undefined, manager)).body.length,1);
+    assert.deepEqual((await f.request(path, 'POST', {}, admin)).body, {removed:0});
+    await f.restart(); admin = await f.login('admin.olivos');
+    state = (await f.request('state?community=olivos', 'GET', undefined, admin)).body;
+    assert.equal(state.tickets.length,2); assert.ok(!state.tickets.some(t=>t.id===done.id));
+    assert.deepEqual((await f.request('tickets/clear-completed?community=plaza', 'POST', {}, await f.login('gestion'))).body,{removed:1});
+  } finally { await f.close(); }
+});
+
 test('Contenidos: permisos, revisión, publicación, edición, retirada y persistencia', async () => {
   const f = await fixture();
   try {

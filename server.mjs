@@ -9,6 +9,7 @@ import { documentPDF } from './src/pdf.mjs';
 import { documentView, extractDocument, maxFileSize, supportedExtensions } from './src/documents.mjs';
 import { createAssistant } from './src/assistant.mjs';
 import { adviceKinds, adviceCategories, seedAdvice } from './src/advice.mjs';
+import { resetConsultationsOnce } from './src/reset-consultations.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const categories = ['General', 'Incidencia', 'Recibos'];
@@ -218,6 +219,15 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
           return reply(200, answer);
         } finally { assistantActive.delete(user.id); }
       }
+      if (url.pathname === '/api/tickets/clear-completed' && req.method === 'POST') {
+        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede eliminar consultas completadas' });
+        const removed = store.tickets.filter(t => t.communityId === community.id && t.status === 'Resuelta').length;
+        if (removed) {
+          store.tickets = store.tickets.filter(t => t.communityId !== community.id || t.status !== 'Resuelta');
+          save();
+        }
+        return reply(200, { removed });
+      }
       if (url.pathname === '/api/tickets' && req.method === 'POST') {
         if (!validText(body.subject, 120) || !validText(body.message, 2000) || !categories.includes(body.category) || !['Normal', 'Alta'].includes(body.priority)) return reply(400, { error: 'Revisa el asunto, el mensaje, la categoría y la prioridad' });
         const ticket = { id: randomUUID(), communityId: community.id, subject: body.subject.trim(), message: body.message.trim(), category: body.category, priority: body.priority, status: 'Pendiente', reply: '', createdAt: new Date().toISOString(), residentId: user.id, resident: user.name };
@@ -270,6 +280,9 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const envFile = join(root, '.env');
   if (existsSync(envFile)) process.loadEnvFile(envFile);
+  if (process.env.NODE_ENV === 'production' && process.env.RAILWAY_PROJECT_ID === '4cc00990-8fbd-4aea-b37d-5994bc2ced58' && process.env.RAILWAY_SERVICE_ID === 'e4f043ec-382c-40b3-9979-1950fc00c0bb') {
+    resetConsultationsOnce(join(resolve(process.env.DATA_DIR || join(root, 'data')), 'demo.json'), 'reset-consultations-video-2026-10-17');
+  }
   const port = Number(process.env.PORT || 3000);
   const host = process.env.HOST || '127.0.0.1';
   const server = createApp();

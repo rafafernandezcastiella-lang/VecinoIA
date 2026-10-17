@@ -7,6 +7,8 @@ let user = null, csrfToken = '';
 let requestedDocument = '';
 let privateRequests = [], privateCategory = 'Luz', privateFilter = 'Todas';
 let adviceFilter = 'Todas', editingAdvice = '';
+let adminFilter = 'Todas';
+const communityStatusLabel = status => ({ Pendiente: 'Pendiente', 'En revisión': 'En curso', Resuelta: 'Terminada' }[status] || status);
 const privateCategories = ['Luz', 'Gas', 'Seguros', 'Mantenimiento', 'Otras consultas'];
 const incomingLink = new URLSearchParams(location.search);
 const roleNames = { resident: 'Vecino', admin: 'Administrador', manager: 'Gestión VecinoIA' };
@@ -24,6 +26,7 @@ async function api(path, method = 'GET', body, id = communityId) {
   return data;
 }
 function showLogin() {
+  adminFilter = 'Todas';
   adviceFilter = 'Todas'; editingAdvice = '';
   privateRequests = []; privateCategory = 'Luz'; privateFilter = 'Todas';
   user = null; csrfToken = ''; chat = []; pendingQuestion = ''; serviceCategory = 'General'; requestedDocument = ''; state = undefined; page = 'home'; loading = false;
@@ -104,7 +107,7 @@ function deliveries() {
   }).join('') : '<div class="empty">Las solicitudes de documentos de esta comunidad aparecerán aquí.</div>');
 }
 function ticketCard(ticket, admin = false) {
-  return `<article class="card"><span class="tag status">${escape(ticket.status)}</span><div class="meta">${escape(ticket.category)} · ${escape(ticket.priority)} · ${date(ticket.createdAt)}</div><h3>${escape(ticket.subject)}</h3><p class="ticket-message">${escape(ticket.message)}</p>${ticket.reply ? `<div class="reply"><strong>Respuesta del administrador</strong><p>${escape(ticket.reply)}</p></div>` : ''}${admin ? `<br><form class="form reply-form" data-id="${escape(ticket.id)}"><label>Estado<select name="status">${['Pendiente', 'En revisión', 'Resuelta'].map(status => `<option ${status === ticket.status ? 'selected' : ''}>${status}</option>`).join('')}</select></label><label>Respuesta<textarea name="reply" maxlength="2000">${escape(ticket.reply)}</textarea></label><button class="btn" type="submit">Guardar respuesta</button></form>` : ''}</article>`;
+  return `<article class="card"><span class="tag status">${escape(communityStatusLabel(ticket.status))}</span><div class="meta">${escape(ticket.category)} · ${escape(ticket.priority)} · ${date(ticket.createdAt)}</div><h3>${escape(ticket.subject)}</h3><p class="ticket-message">${escape(ticket.message)}</p>${ticket.reply ? `<div class="reply"><strong>Respuesta del administrador</strong><p>${escape(ticket.reply)}</p></div>` : ''}${admin ? `<br><form class="form reply-form" data-id="${escape(ticket.id)}"><label>Estado<select name="status">${['Pendiente', 'En revisión', 'Resuelta'].map(status => `<option value="${status}" ${status === ticket.status ? 'selected' : ''}>${communityStatusLabel(status)}</option>`).join('')}</select></label><label>Respuesta<textarea name="reply" maxlength="2000">${escape(ticket.reply)}</textarea></label><button class="btn" type="submit">Guardar respuesta</button></form>` : ''}</article>`;
 }
 function tickets() {
   return heading('Consultas de tu comunidad.', 'Consulta sobre juntas, normas, recibos comunitarios o incidencias del edificio.') + `<div class="note">Las consultas están asociadas a tu usuario. Los vecinos ven las suyas y los administradores autorizados pueden atenderlas. Utiliza solo datos ficticios.</div><div class="columns"><section><h2>Nueva consulta</h2><form class="card form" id="ticket-form"><label>Asunto<input name="subject" required maxlength="120" value="${escape(pendingQuestion.slice(0, 120))}" placeholder="Por ejemplo, consulta sobre un recibo comunitario ficticio"></label><div class="form-row"><label>Categoría<select name="category">${['General', 'Incidencia', 'Recibos'].map(c => `<option ${c === serviceCategory ? 'selected' : ''}>${c}</option>`).join('')}</select></label><label>Prioridad<select name="priority"><option>Normal</option><option>Alta</option></select></label></div><label>Mensaje<textarea name="message" required maxlength="2000" placeholder="Utiliza únicamente información ficticia">${escape(pendingQuestion)}</textarea></label><button class="btn" type="submit">Enviar consulta</button></form></section><section><h2>Mis consultas (${state.tickets.length})</h2>${state.tickets.length ? state.tickets.map(t => ticketCard(t)).join('') : '<div class="empty">Aún no hay consultas. Al enviar una, podrás seguir su estado aquí.</div>'}</section></div>`;
@@ -121,8 +124,17 @@ function serviceInbox() {
   return heading('Atención particular de VecinoIA.', 'Bandeja de todas las comunidades asignadas a tu usuario de gestión.') + `<div class="note">Solo Gestión VecinoIA y el vecino autor pueden acceder a estas solicitudes. Los asuntos comunitarios permanecen en Administración.</div><div class="stats">${['Pendiente', 'En revisión', 'Resuelta'].map(status => `<div class="stat"><strong>${privateRequests.filter(r => r.status === status).length}</strong><span>${status}</span></div>`).join('')}</div><div class="card inbox-filter"><label for="private-filter">Mostrar solicitudes</label><select id="private-filter">${['Todas', 'Pendiente', 'En revisión', 'Resuelta'].map(s => `<option ${s === privateFilter ? 'selected' : ''}>${s}</option>`).join('')}</select><span>${filtered.length} solicitudes · Todas tus comunidades autorizadas</span></div>${filtered.length ? filtered.map(item => privateCard(item, true)).join('') : '<div class="empty">No hay consultas particulares con este estado.</div>'}`;
 }
 function admin() {
-  return heading('Una comunidad bien atendida.', 'Gestiona las consultas y publica avisos para la comunidad seleccionada.') + `<div class="note">Acceso con identificación y permisos por comunidad. Solo utiliza datos ficticios.</div><div class="stats"><div class="stat"><strong>${state.tickets.filter(t => t.status === 'Pendiente').length}</strong><span>Pendientes</span></div><div class="stat"><strong>${state.tickets.filter(t => t.status === 'En revisión').length}</strong><span>En revisión</span></div><div class="stat"><strong>${state.tickets.filter(t => t.status === 'Resuelta').length}</strong><span>Resueltas</span></div></div><div class="columns"><section><h2>Consultas de ${escape(state.name)}</h2>${state.tickets.length ? state.tickets.map(t => ticketCard(t, true)).join('') : '<div class="empty">Las consultas de esta comunidad aparecerán aquí.</div>'}</section><section><h2>Publicar un aviso</h2><form class="card form" id="announcement-form"><label>Título<input name="title" required maxlength="120"></label><label>Contenido<textarea name="body" required maxlength="2000"></textarea></label><button class="btn" type="submit">Publicar aviso</button></form></section></div>`;
+  const filtered = adminFilter === 'Todas' ? state.tickets : state.tickets.filter(t => t.status === adminFilter);
+  const completed = state.tickets.filter(t => t.status === 'Resuelta').length;
+  return heading('Una comunidad bien atendida.', 'Consulta el estado de las comunicaciones y atiende a los vecinos de la comunidad seleccionada.') +
+    `<div class="note">Resumen de consultas e incidencias de ${escape(state.name)}. Las consultas particulares las atiende Gestión VecinoIA en su canal privado.</div>
+    <div class="stats" aria-label="Resumen de comunicaciones">
+      ${[['Pendiente', 'Pendientes'], ['En revisión', 'En curso'], ['Resuelta', 'Terminadas']].map(([status, label]) => `<div class="stat"><strong>${state.tickets.filter(t => t.status === status).length}</strong><span>${label}</span></div>`).join('')}
+    </div>
+    <section class="card communications-toolbar"><div><label for="admin-filter">Mostrar comunicaciones</label><select id="admin-filter">${[['Todas', 'Todas'], ['Pendiente', 'Pendientes'], ['En revisión', 'En curso'], ['Resuelta', 'Terminadas']].map(([value, label]) => `<option value="${value}" ${value === adminFilter ? 'selected' : ''}>${label}</option>`).join('')}</select><p>${filtered.length} de ${state.tickets.length} comunicaciones</p></div><form id="clear-completed-form" class="form"><p>Elimina solo las ${completed} terminadas de esta comunidad, también de la vista de sus vecinos.</p><button class="btn secondary" type="submit" ${completed ? '' : 'disabled'}>Eliminar completadas (${completed})</button></form></section>
+    <div class="columns"><section><h2>Consultas de ${escape(state.name)}</h2>${filtered.length ? filtered.map(t => ticketCard(t, true)).join('') : `<div class="empty">${state.tickets.length ? 'No hay comunicaciones con este estado.' : 'No hay comunicaciones. Las nuevas consultas e incidencias aparecerán aquí.'}</div>`}</section><section><h2>Publicar un aviso</h2><form class="card form" id="announcement-form"><label>Título<input name="title" required maxlength="120"></label><label>Contenido<textarea name="body" required maxlength="2000"></textarea></label><button class="btn" type="submit">Publicar aviso</button></form></section></div>`;
 }
+
 function advice() {
   const staff = role !== 'resident';
   const items = (state.advice || []).filter(a => adviceFilter === 'Todas' || a.kind === adviceFilter);
@@ -201,8 +213,12 @@ document.addEventListener('submit', async event => {
   const button = form.querySelector('button[type="submit"]');
   const target = communityId; loading = true; button.disabled = true; $('#community').disabled = true;
   try {
-    let savedDocument;
-    if (form.id === 'upload-document-form') {
+    let savedDocument, successMessage = 'Guardado correctamente';
+    if (form.id === 'clear-completed-form') {
+      const result = await api('tickets/clear-completed', 'POST', {}, target);
+      successMessage = `${result.removed} consultas completadas eliminadas`;
+    }
+    else if (form.id === 'upload-document-form') {
       const file = form.querySelector('input[type="file"]').files[0];
       if (!file || file.size > 5 * 1024 * 1024) throw new Error('Selecciona un archivo de hasta 5 MB');
       $('#upload-progress').hidden = false;
@@ -220,12 +236,13 @@ document.addEventListener('submit', async event => {
     else if (form.classList.contains('reply-form')) await api(`tickets/${form.dataset.id}`, 'PATCH', body, target);
     const [next, requests] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests')]);
     state = next; privateRequests = requests; render();
-    notice(savedDocument ? (savedDocument.processingStatus === 'error' ? 'Archivo guardado con error de procesamiento. Revisa el aviso.' : 'Documento procesado y guardado como borrador. Revísalo antes de publicar.') : 'Guardado correctamente');
+    notice(savedDocument ? (savedDocument.processingStatus === 'error' ? 'Archivo guardado con error de procesamiento. Revisa el aviso.' : 'Documento procesado y guardado como borrador. Revísalo antes de publicar.') : successMessage);
     if (savedDocument) document.getElementById(`managed-${savedDocument.id}`)?.scrollIntoView({ block: 'center', behavior: 'auto' });
   } catch (error) { notice(error.message); }
   finally { loading = false; button.disabled = false; $('#community').disabled = $('#community').options.length <= 1; if ($('#upload-progress')) $('#upload-progress').hidden = true; }
 });
 document.addEventListener('change', event => {
+  if (event.target.id === 'admin-filter') { adminFilter = event.target.value; render(); }
   if (event.target.id === 'advice-filter') { adviceFilter = event.target.value; render(); }
   if (event.target.id === 'private-filter') { privateFilter = event.target.value; render(); }
   if (event.target.id === 'delivery-channel') {
@@ -235,7 +252,7 @@ document.addEventListener('change', event => {
     if (whatsapp) input.setAttribute('pattern', '[+]?[0-9]{8,15}'); else input.removeAttribute('pattern');
   }
 });
-$('#community').addEventListener('change', async event => { if (loading) { event.target.value = communityId; return; } communityId = event.target.value; editingAdvice = ''; adviceFilter = 'Todas'; chat = []; pendingQuestion = ''; serviceCategory = 'General'; requestedDocument = ''; await load(); });
+$('#community').addEventListener('change', async event => { if (loading) { event.target.value = communityId; return; } communityId = event.target.value; adminFilter = 'Todas'; editingAdvice = ''; adviceFilter = 'Todas'; chat = []; pendingQuestion = ''; serviceCategory = 'General'; requestedDocument = ''; await load(); });
 showLogin();
 try {
   const response = await fetch('/api/session');

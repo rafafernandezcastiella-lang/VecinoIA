@@ -174,10 +174,10 @@ Todas son públicas y ficticias. Sus claves pueden mostrarse en la demostración
 
 7. Pulsa **Administración** en el menú izquierdo.
 8. Busca la tarjeta **Vídeo final — Luz del portal fundida**. Si repetiste la toma, busca el asunto con el sufijo que utilizaste.
-9. Dentro de esa tarjeta, abre **Estado** y elige **En revisión**.
+9. Dentro de esa tarjeta, abre **Estado** y elige **En curso**.
 10. En **Respuesta**, pega: **Hemos avisado al servicio de mantenimiento para revisar la luz del portal.**
 11. Pulsa **Guardar respuesta**, dentro de esa misma tarjeta.
-12. Espera al aviso **Guardado correctamente**. Comprueba que aparece **En revisión** y la respuesta.
+12. Espera al aviso **Guardado correctamente**. Comprueba que aparece **En curso** y la respuesta.
 
 **DI:**
 
@@ -244,6 +244,8 @@ No aceleres hasta que no se entienda. Mantén las diez escenas, pero acorta esta
 - Si todavía excede el límite, ensaya otra toma antes de grabar la definitiva. No se ha cronometrado este recorrido con tu ritmo de lectura.
 
 ## Revisión del vídeo antes de entregar
+
+Para limpiar los ensayos comunitarios desde Administración, cambia el estado de las consultas finalizadas a **Terminada**, guarda cada respuesta y pulsa **Eliminar completadas**. Solo se borran las terminadas de la comunidad seleccionada; también desaparecen de la vista de sus vecinos. No pulses ese botón mientras necesitas mostrar esas consultas en la grabación. Las consultas particulares pertenecen al canal separado de Gestión VecinoIA.
 
 - Dura como máximo 5:00 y se escucha tu voz sin cortes importantes.
 - Se leen los menús y las respuestas. La ventana está maximizada y no aparecen datos personales, claves privadas ni facturación.
