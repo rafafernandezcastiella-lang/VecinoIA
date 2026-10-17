@@ -96,3 +96,9 @@ Tras ver el volumen asociado con un cambio pendiente, se indica aplicar Deploy y
 ## Limpieza de ensayos autorizada por el usuario
 
 Se respaldan las tres consultas comunitarias y dos particulares y se vacían una sola vez al desplegar `788a987`. Comprobación remota posterior: cero registros de ambos tipos, con documentos y fichas conservados en ambas comunidades. La prueba local comprueba copia original íntegra, conservación de otras colecciones y ausencia de un segundo borrado. Veintidós pruebas pasan. Se retira la llamada de limpieza del arranque tras confirmar el resultado. Los backups quedan fuera del repositorio y de las rutas públicas.
+
+## Resumen y eliminación de completadas — 17 de octubre
+
+Veintitrés pruebas aprobadas. La nueva prueba cubre sesión, rol, CSRF, comunidad, borrado solo de Resuelta, conservación de pendientes/activas y canal privado, aislamiento de otras comunidades, repetición con cero eliminadas y persistencia tras reinicio. Edge verifica recuentos, filtros, cambio de estado a Terminada, eliminación, botón deshabilitado en cero, preservación de activas, recarga y móvil a 390 px sin errores JavaScript ni desbordamiento.
+
+La limpieza global de ensayos solicitada para esta fecha respalda dos comunitarias y dos particulares. Después de `73e3633`, ambas bandejas públicas están vacías y se conservan documentos y fichas. El recurso público app.js contiene los controles nuevos. Se elimina la llamada temporal de arranque una vez verificado el resultado.
