@@ -44,3 +44,16 @@
 .communications-toolbar label { display: block; font-weight: bold; margin-bottom: 8px; }
 .communications-toolbar select { width: 100%; }
 .communications-toolbar p { margin-top: 10px; }
+.urgent-announcements { margin-bottom: 24px; }
+.urgent-banner { background: #fff4e5; color: #692500; border: 3px solid #b54100; border-left-width: 9px; border-radius: 14px; padding: 24px; margin-bottom: 16px; box-shadow: 0 0 0 0 #b5410030; animation: urgent-emphasis 2.4s ease-in-out infinite; overflow-wrap: anywhere; }
+.urgent-banner h2 { color: #692500; margin: 10px 0; }
+.urgent-banner p { color: #572a12; margin-bottom: 14px; }
+.urgent-label { font-size: 13px; font-weight: 800; letter-spacing: .04em; }
+.urgent-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #b54100; margin-right: 8px; }
+.urgent-card { border-left: 5px solid #b54100; }
+.announcement-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.urgent-management { margin-top: 24px; }
+.urgent-management .card { border-left: 5px solid #b54100; }
+.email-simulation { padding: 12px; border-radius: 8px; background: #edf4fa; color: #002d5a; margin: 16px 0; }
+@keyframes urgent-emphasis { 50% { box-shadow: 0 0 0 6px #b5410030; } }
+@media (prefers-reduced-motion: reduce) { .urgent-banner { animation: none; } }

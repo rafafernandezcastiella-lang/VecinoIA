@@ -102,3 +102,9 @@ Se respaldan las tres consultas comunitarias y dos particulares y se vacían una
 Veintitrés pruebas aprobadas. La nueva prueba cubre sesión, rol, CSRF, comunidad, borrado solo de Resuelta, conservación de pendientes/activas y canal privado, aislamiento de otras comunidades, repetición con cero eliminadas y persistencia tras reinicio. Edge verifica recuentos, filtros, cambio de estado a Terminada, eliminación, botón deshabilitado en cero, preservación de activas, recarga y móvil a 390 px sin errores JavaScript ni desbordamiento.
 
 La limpieza global de ensayos solicitada para esta fecha respalda dos comunitarias y dos particulares. Después de `73e3633`, ambas bandejas públicas están vacías y se conservan documentos y fichas. El recurso público app.js contiene los controles nuevos. Se elimina la llamada temporal de arranque una vez verificado el resultado.
+
+## Avisos urgentes — 17 de octubre
+
+Veinticuatro pruebas aprobadas. La nueva prueba verifica tipo ordinario/urgente, rechazo de valores inválidos, publicación y finalización restringidas a personal autorizado, CSRF, separación por comunidad, ausencia de metadatos de correo en el estado del vecino, cuentas destinatarias simuladas por comunidad, cero correos reales y persistencia del aviso finalizado tras reinicio.
+
+Edge con contextos separados comprueba ordinario sin banner, urgente con banner, dos destinatarios simulados para Los Olivos, asunto y contenido del correo de ejemplo, actualización del banner sin perder el asunto escrito por el vecino, otra comunidad sin ese aviso, finalización que retira el banner y conserva historial, animación desactivada con movimiento reducido y móvil a 390 px sin desbordamiento. Sin errores JavaScript ni mensajes reales. Capturas locales: `.preview/urgent-admin.png`, `.preview/urgent-neighbor.png`, `.preview/urgent-mobile.png`. No se añaden avisos de ensayo a la web pública.

@@ -31,6 +31,7 @@ node --test
 - Consultas particulares privadas de luz, gas, seguros, mantenimiento y otras categorías.
 - Bandeja multicomunidad de Gestión VecinoIA, con respuesta y filtro por estado.
 - Panel para responder, cambiar estados y publicar avisos.
+- Avisos ordinarios o urgentes con banner destacado, actualización del portal y finalización. Correo urgente simulado para la demo; no se envían correos reales.
 - Carga de PDF con texto, DOCX y TXT, con revisión, publicación y retirada por comunidad.
 - Descarga del archivo original y búsqueda de fragmentos en fuentes publicadas.
 - Persistencia local en `data/demo.json`, excluida de Git.

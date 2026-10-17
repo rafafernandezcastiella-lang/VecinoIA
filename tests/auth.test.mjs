@@ -38,6 +38,35 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Avisos ordinarios y urgentes: permisos, simulación por comunidad, finalización y persistencia', async () => {
+  const f = await fixture();
+  try {
+    const admin = await f.login('admin.olivos'), resident = await f.login('vecino.olivos'), plaza = await f.login('vecino.plaza');
+    const notice = {title:'Aviso ficticio',body:'Comunicado de demostración'};
+    const post = (body, session=admin, community='olivos') => f.request(`announcements?community=${community}`,'POST',body,session);
+    assert.equal((await post(notice,resident)).status,403);
+    assert.equal((await post(notice,admin,'plaza')).status,403);
+    assert.equal((await post({...notice,urgency:'inválida'})).status,400);
+    assert.equal((await f.request('announcements?community=olivos','POST',notice,admin,{'X-CSRF-Token':'incorrecto'})).status,403);
+    const ordinary = await post(notice); assert.equal(ordinary.status,201); assert.equal(ordinary.body.urgency,'ordinary'); assert.equal(ordinary.body.emailNotification,undefined);
+    const urgent = await post({...notice,title:'Incidencia ficticia de agua caliente',urgency:'urgent'});
+    assert.equal(urgent.status,201); assert.equal(urgent.body.active,true);
+    assert.equal(urgent.body.emailNotification.mode,'simulation'); assert.equal(urgent.body.emailNotification.recipientCount,2); assert.equal(urgent.body.emailNotification.sentCount,0);
+    const id=urgent.body.id, path=`announcements/${id}?community=olivos`;
+    const state=(await f.request('state?community=olivos','GET',undefined,resident)).body;
+    const visible=state.announcements.find(a=>a.id===id); assert.equal(visible.urgency,'urgent'); assert.equal(visible.emailNotification,undefined);
+    assert.ok(!(await f.request('state?community=plaza','GET',undefined,plaza)).body.announcements.some(a=>a.id===id));
+    assert.equal((await f.request(path,'PATCH',{action:'end'},resident)).status,403);
+    assert.equal((await f.request(`announcements/${id}?community=plaza`,'PATCH',{action:'end'},await f.login('administrador'))).status,404);
+    assert.equal((await f.request(path,'PATCH',{action:'end'},admin)).body.active,false);
+    assert.equal((await f.request(`announcements/${ordinary.body.id}?community=olivos`,'PATCH',{action:'end'},admin)).status,400);
+    await f.restart();const manager=await f.login('gestion');
+    const final=(await f.request('state?community=olivos','GET',undefined,manager)).body.announcements.find(a=>a.id===id);
+    assert.equal(final.active,false); assert.ok(final.endedAt); assert.equal(final.emailNotification.recipientCount,2);
+    const second=await post({...notice,urgency:'urgent'},manager,'plaza');assert.equal(second.body.emailNotification.recipientCount,1);
+  } finally {await f.close();}
+});
+
 test('Eliminar completadas solo borra resueltas de la comunidad autorizada y persiste', async () => {
   const f = await fixture();
   try {

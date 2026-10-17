@@ -68,7 +68,11 @@ async function load() {
   catch (error) { loading = false; $('#content').innerHTML = '<div class="empty">No se pudo cargar la comunidad. <button class="btn" data-action="retry">Reintentar</button></div>'; notice(error.message); }
 }
 const heading = (title, description) => `<div class="heading"><div class="eyebrow">${escape(state.name)}</div><h1>${title}</h1><p class="lead">${description}</p></div>`;
-const announcement = a => `<article class="card"><span class="tag">${escape(a.category)}</span><div class="meta">${date(a.date)}</div><h3>${escape(a.title)}</h3><p>${escape(a.body)}</p></article>`;
+const announcement = a => `<article class="card ${a.urgency === 'urgent' ? 'urgent-card' : ''}"><span class="tag">${a.urgency === 'urgent' ? (a.active === false ? 'Urgente · Finalizado' : 'Aviso urgente') : 'Aviso ordinario'}</span><div class="meta">${escape(a.category)} · ${date(a.date)}</div><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p></article>`;
+function urgentBanners() {
+  const urgent = state.announcements.filter(a => a.urgency === 'urgent' && a.active !== false);
+  return `<section id="urgent-notices" class="urgent-announcements" aria-label="Avisos urgentes de tu comunidad" ${urgent.length ? '' : 'hidden'}>${urgent.map(a => `<article class="urgent-banner"><div class="urgent-label"><span class="urgent-dot" aria-hidden="true"></span>AVISO URGENTE · ${date(a.date)}</div><h2>${escape(a.title)}</h2><p class="announcement-body">${escape(a.body)}</p><small>Comunicado por la administración de ${escape(state.name)}</small></article>`).join('')}</section>`;
+}
 function home() {
   return `<div class="welcome">${heading('Tu comunidad, más cerca.', escape(state.subtitle))}<section class="hero"><div><div class="eyebrow">MENOS ESPERAS, MÁS RESPUESTAS</div><h2>Una duda menos.<br>Un día más sencillo.</h2><p>Consulta la información de tu comunidad y encuentra respuestas con su documento de origen.</p><div class="hero-actions"><button class="btn" data-page="assistant">Preguntar al asistente ↗</button><button class="btn photo-button" data-page="tickets">Hablar con el administrador</button></div></div><div class="community-plaque"><span class="plaque-icon" aria-hidden="true">⌂</span><div><small>BIENVENIDO A CASA</small><strong>${escape(state.name)}</strong><span>${state.homes} viviendas · Comunidad de demostración</span></div></div></section></div>
     <div class="stats"><div class="stat"><strong>${state.announcements.length}</strong><span>Avisos de la comunidad</span></div><div class="stat"><strong>${state.documents.length}</strong><span>Documentos disponibles</span></div><div class="stat"><strong>${state.tickets.filter(t => t.status !== 'Resuelta').length}</strong><span>Consultas abiertas</span></div></div>
@@ -132,9 +136,13 @@ function admin() {
       ${[['Pendiente', 'Pendientes'], ['En revisión', 'En curso'], ['Resuelta', 'Terminadas']].map(([status, label]) => `<div class="stat"><strong>${state.tickets.filter(t => t.status === status).length}</strong><span>${label}</span></div>`).join('')}
     </div>
     <section class="card communications-toolbar"><div><label for="admin-filter">Mostrar comunicaciones</label><select id="admin-filter">${[['Todas', 'Todas'], ['Pendiente', 'Pendientes'], ['En revisión', 'En curso'], ['Resuelta', 'Terminadas']].map(([value, label]) => `<option value="${value}" ${value === adminFilter ? 'selected' : ''}>${label}</option>`).join('')}</select><p>${filtered.length} de ${state.tickets.length} comunicaciones</p></div><form id="clear-completed-form" class="form"><p>Elimina solo las ${completed} terminadas de esta comunidad, también de la vista de sus vecinos.</p><button class="btn secondary" type="submit" ${completed ? '' : 'disabled'}>Eliminar completadas (${completed})</button></form></section>
-    <div class="columns"><section><h2>Consultas de ${escape(state.name)}</h2>${filtered.length ? filtered.map(t => ticketCard(t, true)).join('') : `<div class="empty">${state.tickets.length ? 'No hay comunicaciones con este estado.' : 'No hay comunicaciones. Las nuevas consultas e incidencias aparecerán aquí.'}</div>`}</section><section><h2>Publicar un aviso</h2><form class="card form" id="announcement-form"><label>Título<input name="title" required maxlength="120"></label><label>Contenido<textarea name="body" required maxlength="2000"></textarea></label><button class="btn" type="submit">Publicar aviso</button></form></section></div>`;
+    <div class="columns"><section><h2>Consultas de ${escape(state.name)}</h2>${filtered.length ? filtered.map(t => ticketCard(t, true)).join('') : `<div class="empty">${state.tickets.length ? 'No hay comunicaciones con este estado.' : 'No hay comunicaciones. Las nuevas consultas e incidencias aparecerán aquí.'}</div>`}</section><section><h2>Publicar un aviso</h2><form class="card form" id="announcement-form"><label>Tipo de aviso<select name="urgency" id="announcement-urgency"><option value="ordinary">Ordinario · Sin urgencia</option><option value="urgent">Urgente · Banner destacado y correo simulado</option></select></label><p id="announcement-explanation" class="private-routing">Se publicará en los avisos de la comunidad, sin banner urgente ni notificación por correo.</p><label>Título<input name="title" required maxlength="120"></label><label>Contenido<textarea name="body" required maxlength="2000"></textarea></label><button class="btn" type="submit">Publicar aviso</button></form></section></div>` + announcementManagement();
 }
 
+function announcementManagement() {
+  const notices = state.announcements.filter(a => a.urgency === 'urgent');
+  return `<section class="urgent-management"><h2 class="outside-heading">Seguimiento de avisos urgentes</h2>${notices.length ? notices.map(a => `<article class="card"><span class="tag">${a.active === false ? 'Finalizado' : 'Urgente activo'}</span><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p><div class="email-simulation"><strong>Notificación por correo: simulada</strong><p>${a.emailNotification?.recipientCount || 0} cuentas de vecinos de esta comunidad incluidas. Correos reales enviados: 0.</p><p>Esta demo no envía correo real.</p><details><summary>Ver correo de demostración</summary><p><strong>Asunto:</strong> URGENTE · ${escape(state.name)} · ${escape(a.title)}</p><p class="announcement-body">${escape(a.body)}</p><p>Consulta el portal de tu comunidad para seguir las novedades.</p></details></div>${a.active === false ? '<p>El banner destacado ya no se muestra a los vecinos.</p>' : `<form class="end-announcement-form form" data-id="${escape(a.id)}"><button class="btn secondary" type="submit">Finalizar aviso urgente</button><p>Retira el banner destacado y conserva el comunicado en el historial de avisos.</p></form>`}</article>`).join('') : '<div class="empty">Los avisos urgentes y sus notificaciones simuladas aparecerán aquí.</div>'}</section>`;
+}
 function advice() {
   const staff = role !== 'resident';
   const items = (state.advice || []).filter(a => adviceFilter === 'Todas' || a.kind === adviceFilter);
@@ -158,10 +166,26 @@ function render() {
   if (['admin', 'deliveries', 'knowledge'].includes(page) && role === 'resident') page = 'home';
   if ((page === 'serviceInbox' && role !== 'manager') || (page === 'services' && role !== 'resident')) page = 'home';
   $('#nav').innerHTML = navigation.map(([id, icon, label]) => `<button data-page="${id}" class="${id === page ? 'active' : ''}" ${id === page ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span> &nbsp; ${label}</button>`).join('');
-  $('#content').innerHTML = ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice })[page]();
+  $('#content').innerHTML = urgentBanners() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice })[page]();
   document.title = `VecinoIA · ${state.name}`;
 }
 function navigate(next) { if (loading) return; page = next; render(); $('#content').focus(); }
+let refreshingUrgent = false;
+async function refreshUrgentAnnouncements() {
+  if (!user || role !== 'resident' || loading || refreshingUrgent || document.visibilityState !== 'visible') return;
+  const target = communityId, userId = user.id;
+  refreshingUrgent = true;
+  try {
+    const next = await api('state', 'GET', undefined, target);
+    if (user?.id !== userId || communityId !== target || !state) return;
+    state.announcements = next.announcements;
+    const area = $('#urgent-notices');
+    if (area) area.outerHTML = urgentBanners();
+  } catch { /* Un fallo temporal no interrumpe el formulario del vecino. */ }
+  finally { refreshingUrgent = false; }
+}
+setInterval(refreshUrgentAnnouncements, 30000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshUrgentAnnouncements(); });
 async function ask(question) {
   if (loading) return;
   const target = communityId;
@@ -232,7 +256,11 @@ document.addEventListener('submit', async event => {
     else if (form.classList.contains('private-reply-form')) await api(`service-requests/${form.dataset.id}`, 'PATCH', body, form.dataset.community);
     else if (form.id === 'document-request-form') { await api('document-requests', 'POST', body, target); requestedDocument = ''; }
     else if (form.classList.contains('delivery-confirm-form')) await api(`document-requests/${form.dataset.id}`, 'PATCH', { status: 'Envío confirmado por gestor' }, target);
-    else if (form.id === 'announcement-form') await api('announcements', 'POST', body, target);
+    else if (form.id === 'announcement-form') {
+      const published = await api('announcements', 'POST', body, target);
+      successMessage = published.urgency === 'urgent' ? `Aviso urgente publicado. Correo simulado para ${published.emailNotification.recipientCount} vecinos; no se han enviado correos reales.` : 'Aviso ordinario publicado';
+    }
+    else if (form.classList.contains('end-announcement-form')) await api(`announcements/${form.dataset.id}`, 'PATCH', { action: 'end' }, target);
     else if (form.classList.contains('reply-form')) await api(`tickets/${form.dataset.id}`, 'PATCH', body, target);
     const [next, requests] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests')]);
     state = next; privateRequests = requests; render();
@@ -242,6 +270,9 @@ document.addEventListener('submit', async event => {
   finally { loading = false; button.disabled = false; $('#community').disabled = $('#community').options.length <= 1; if ($('#upload-progress')) $('#upload-progress').hidden = true; }
 });
 document.addEventListener('change', event => {
+  if (event.target.id === 'announcement-urgency') {
+    $('#announcement-explanation').textContent = event.target.value === 'urgent' ? 'Aparecerá un banner destacado en el portal. Se registrará un correo simulado para los vecinos de esta comunidad; no se enviarán correos reales.' : 'Se publicará en los avisos de la comunidad, sin banner urgente ni notificación por correo.';
+  }
   if (event.target.id === 'admin-filter') { adminFilter = event.target.value; render(); }
   if (event.target.id === 'advice-filter') { adviceFilter = event.target.value; render(); }
   if (event.target.id === 'private-filter') { privateFilter = event.target.value; render(); }

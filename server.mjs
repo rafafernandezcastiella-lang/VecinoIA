@@ -114,7 +114,10 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         documents: publishedDocs(community.id).map(documentView),
         faqs: undefined,
         ...(user.role !== 'resident' ? { managedDocuments: store.documents.filter(d => d.communityId === community.id).map(documentView) } : {}),
-        announcements: [...store.announcements.filter(a => a.communityId === community.id), ...community.announcements],
+        announcements: [...store.announcements.filter(a => a.communityId === community.id), ...community.announcements].map(a => {
+          const { emailNotification, ...visible } = a;
+          return user.role === 'resident' ? visible : a;
+        }),
         tickets: store.tickets.filter(ticket => ticket.communityId === community.id && (user.role !== 'resident' || ticket.residentId === user.id)),
         documentRequests: store.documentRequests.filter(item => item.communityId === community.id && (user.role !== 'resident' || item.residentId === user.id))
       });
@@ -264,8 +267,21 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
       if (url.pathname === '/api/announcements' && req.method === 'POST') {
         if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede publicar avisos' });
         if (!validText(body.title, 120) || !validText(body.body, 2000)) return reply(400, { error: 'Escribe un título y un contenido válidos' });
-        const announcement = { id: randomUUID(), communityId: community.id, title: body.title.trim(), body: body.body.trim(), category: 'Comunidad', date: new Date().toISOString().slice(0, 10) };
+        const urgency = body.urgency ?? 'ordinary';
+        if (!['ordinary', 'urgent'].includes(urgency)) return reply(400, { error: 'Elige aviso ordinario o urgente' });
+        const announcement = { id: randomUUID(), communityId: community.id, title: body.title.trim(), body: body.body.trim(), category: 'Comunidad', urgency, active: true, date: new Date().toISOString().slice(0, 10) };
+        if (urgency === 'urgent') {
+          const recipientCount = users.filter(u => u.role === 'resident' && u.communityIds.includes(community.id)).length;
+          announcement.emailNotification = { mode: 'simulation', recipientCount, sentCount: 0, simulatedAt: new Date().toISOString() };
+        }
         store.announcements.unshift(announcement); save(); return reply(201, announcement);
+      }
+      if (url.pathname.startsWith('/api/announcements/') && req.method === 'PATCH') {
+        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede finalizar avisos urgentes' });
+        const item = store.announcements.find(a => a.id === url.pathname.split('/').pop() && a.communityId === community.id);
+        if (!item) return reply(404, { error: 'Aviso no encontrado en esta comunidad' });
+        if (body.action !== 'end' || item.urgency !== 'urgent') return reply(400, { error: 'Acción no válida para este aviso' });
+        item.active = false; item.endedAt = new Date().toISOString(); save(); return reply(200, item);
       }
       return reply(404, { error: 'Ruta no encontrada' });
     } catch (error) {
