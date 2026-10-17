@@ -73,10 +73,28 @@ function urgentBanners() {
   const urgent = state.announcements.filter(a => a.urgency === 'urgent' && a.active !== false);
   return `<section id="urgent-notices" class="urgent-announcements" aria-label="Avisos urgentes de tu comunidad" ${urgent.length ? '' : 'hidden'}>${urgent.map(a => `<article class="urgent-banner"><div class="urgent-label"><span class="urgent-dot" aria-hidden="true"></span>AVISO URGENTE · ${date(a.date)}</div><h2>${escape(a.title)}</h2><p class="announcement-body">${escape(a.body)}</p><small>Comunicado por la administración de ${escape(state.name)}</small></article>`).join('')}</section>`;
 }
+function homeContactCard() {
+  return role === 'resident' ? `<div class="card"><h3>¿Necesitas hablar con el administrador?</h3><p>Envía tu consulta y sigue la respuesta desde aquí.</p><br><button class="btn secondary" data-page="tickets">Crear una consulta</button></div><div class="card"><h3>Avisos particulares del administrador</h3><p>Consulta los mensajes que la administración te ha dirigido de forma individual.</p><button class="btn secondary" data-page="messages">Ver mis avisos particulares</button></div>` : `<div class="card"><h3>Contacto con los vecinos</h3><p>Elige un vecino de esta comunidad y envíale un aviso particular a su portal.</p><br><button class="btn secondary" data-page="neighborContact">Contactar con un vecino</button></div>`;
+}
 function home() {
-  return `<div class="welcome">${heading('Tu comunidad, más cerca.', escape(state.subtitle))}<section class="hero"><div><div class="eyebrow">MENOS ESPERAS, MÁS RESPUESTAS</div><h2>Una duda menos.<br>Un día más sencillo.</h2><p>Consulta la información de tu comunidad y encuentra respuestas con su documento de origen.</p><div class="hero-actions"><button class="btn" data-page="assistant">Preguntar al asistente ↗</button><button class="btn photo-button" data-page="tickets">Hablar con el administrador</button></div></div><div class="community-plaque"><span class="plaque-icon" aria-hidden="true">⌂</span><div><small>BIENVENIDO A CASA</small><strong>${escape(state.name)}</strong><span>${state.homes} viviendas · Comunidad de demostración</span></div></div></section></div>
+  return `<div class="welcome"><div class="community-plaque"><span class="plaque-icon" aria-hidden="true">⌂</span><div><small>BIENVENIDO A CASA</small><strong>${escape(state.name)}</strong><span>${state.homes} viviendas · Comunidad de demostración</span></div></div>${heading('Tu comunidad, más cerca.', escape(state.subtitle))}<section class="hero"><div><div class="eyebrow">MENOS ESPERAS, MÁS RESPUESTAS</div><h2>Una duda menos.<br>Un día más sencillo.</h2><p>Consulta la información de tu comunidad y encuentra respuestas con su documento de origen.</p><div class="hero-actions"><button class="btn" data-page="assistant">Preguntar al asistente ↗</button>${role === 'resident' ? '<button class="btn photo-button" data-page="tickets">Hablar con el administrador</button>' : ''}</div></div></section></div>
     <div class="stats"><div class="stat"><strong>${state.announcements.length}</strong><span>Avisos de la comunidad</span></div><div class="stat"><strong>${state.documents.length}</strong><span>Documentos disponibles</span></div><div class="stat"><strong>${state.tickets.filter(t => t.status !== 'Resuelta').length}</strong><span>Consultas abiertas</span></div></div>
-    <div class="columns"><section><div class="section-head"><h2>Lo que pasa en tu comunidad</h2></div>${state.announcements.map(announcement).join('')}</section><section><div class="card"><span class="tag">PRÓXIMA REUNIÓN</span><div class="meeting-date">${date(state.meeting.date)}</div><h3>${escape(state.meeting.title)}</h3><p>${escape(state.meeting.time)} h · ${escape(state.meeting.place)}</p><p>Consulta la convocatoria en los documentos de tu comunidad.</p><br><button class="btn secondary" data-page="documents">Ver documentación</button></div><div class="card"><h3>¿Necesitas hablar con el administrador?</h3><p>Envía tu consulta y sigue la respuesta desde aquí.</p><br><button class="btn secondary" data-page="tickets">Crear una consulta</button></div></section></div>`;
+    <div class="columns"><section><div class="section-head"><h2>Lo que pasa en tu comunidad</h2></div>${state.announcements.map(announcement).join('')}</section><section><div class="card"><span class="tag">PRÓXIMA REUNIÓN</span><div class="meeting-date">${date(state.meeting.date)}</div><h3>${escape(state.meeting.title)}</h3><p>${escape(state.meeting.time)} h · ${escape(state.meeting.place)}</p><p>Consulta la convocatoria en los documentos de tu comunidad.</p><br><button class="btn secondary" data-page="documents">Ver documentación</button></div>${homeContactCard()}</section></div>`;
+}
+function neighborInboxNotice() {
+  const count = role === 'resident' ? (state.neighborMessages || []).filter(m => !m.readAt).length : 0;
+  return `<div id="neighbor-inbox-notice" class="neighbor-inbox-notice" ${count ? '' : 'hidden'}><strong>Tienes ${count} ${count === 1 ? 'aviso particular nuevo' : 'avisos particulares nuevos'} de la administración.</strong><button class="btn secondary" data-page="messages">Ver avisos particulares</button></div>`;
+}
+function neighborMessageCards(staff) {
+  const items = state.neighborMessages || [];
+  return items.length ? items.map(m => `<article class="card neighbor-message"><span class="tag">${m.readAt ? 'Leído' : (staff ? 'Pendiente de lectura' : 'Nuevo')}</span><div class="meta">${date(m.createdAt)} · ${staff ? `Para: ${escape(m.recipient)}` : `De: ${escape(m.sender)}`}</div><h3>${escape(m.subject)}</h3><p class="announcement-body">${escape(m.message)}</p>${m.readAt ? `<div class="meta">Marcado como leído el ${date(m.readAt)}</div>` : !staff ? `<form class="read-neighbor-message-form form" data-id="${escape(m.id)}"><button class="btn secondary" type="submit">Marcar como leído</button></form>` : ''}</article>`).join('') : `<div class="empty">${staff ? 'Todavía no has enviado avisos particulares en esta comunidad.' : 'No tienes avisos particulares de la administración.'}</div>`;
+}
+function neighborContact() {
+  const residents = state.residents || [];
+  return heading('Contacto con los vecinos.', 'Envía un aviso particular al vecino que selecciones de tu comunidad.') + `<div class="note">El mensaje llegará a Avisos particulares en el portal del destinatario. Solo ese vecino y la administración autorizada de esta comunidad pueden consultarlo. Este canal no comparte las consultas particulares de servicios.</div><div class="columns"><section><form id="neighbor-contact-form" class="card form"><label>Vecino destinatario<select name="recipientId" required><option value="">Selecciona un vecino</option>${residents.map(r => `<option value="${escape(r.id)}">${escape(r.name)}</option>`).join('')}</select></label><label>Asunto<input name="subject" required maxlength="120" placeholder="Por ejemplo, recogida de una llave ficticia"></label><label>Mensaje<textarea name="message" required maxlength="2000" placeholder="Escribe el aviso dirigido solo a este vecino"></textarea></label><button class="btn" type="submit" ${residents.length ? '' : 'disabled'}>Enviar aviso particular</button>${residents.length ? '' : '<p>No hay vecinos asignados a esta comunidad.</p>'}</form></section><section><div class="section-head"><h2>Avisos particulares enviados</h2><button class="btn secondary" data-action="retry">Actualizar bandeja</button></div>${neighborMessageCards(true)}</section></div>`;
+}
+function messages() {
+  return heading('Tus avisos particulares.', 'Comunicaciones que la administración ha dirigido únicamente a tu usuario.') + `<div class="note">Estos avisos no se publican en el tablón de la comunidad. Puedes registrar su lectura desde aquí.</div><div id="neighbor-message-list">${neighborMessageCards(false)}</div>`;
 }
 function assistant() {
   const configured = state.assistant?.configured;
@@ -165,12 +183,13 @@ function render() {
   document.documentElement.style.setProperty('--community-photo-position', state.backgroundPosition);
   $('#content').classList.toggle('home-page', page === 'home');
   $('#community-name').textContent = state.name;
-  const basePages = role === 'resident' ? pages : pages.filter(([id]) => id !== 'services');
-  const navigation = role !== 'resident' ? [...basePages, ['admin', '▦', 'Administración'], ['knowledge', '▤', 'Gestionar documentos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : []), ['deliveries', '↗', 'Envío de documentos']] : basePages;
-  if (['admin', 'deliveries', 'knowledge'].includes(page) && role === 'resident') page = 'home';
+  const basePages = role === 'resident' ? [...pages, ['messages', '✉', 'Avisos particulares']] : pages.filter(([id]) => id !== 'services');
+  const navigation = role !== 'resident' ? [...basePages, ['admin', '▦', 'Administración'], ['neighborContact', '✉', 'Contacto con los vecinos'], ['knowledge', '▤', 'Gestionar documentos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : []), ['deliveries', '↗', 'Envío de documentos']] : basePages;
+  if (['admin', 'deliveries', 'knowledge', 'neighborContact'].includes(page) && role === 'resident') page = 'home';
+  if (page === 'messages' && role !== 'resident') page = 'home';
   if ((page === 'serviceInbox' && role !== 'manager') || (page === 'services' && role !== 'resident')) page = 'home';
   $('#nav').innerHTML = navigation.map(([id, icon, label]) => `<button data-page="${id}" class="${id === page ? 'active' : ''}" ${id === page ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span> &nbsp; ${label}</button>`).join('');
-  $('#content').innerHTML = urgentBanners() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice })[page]();
+  $('#content').innerHTML = urgentBanners() + neighborInboxNotice() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice, neighborContact, messages })[page]();
   document.title = `VecinoIA · ${state.name}`;
 }
 function navigate(next) { if (loading) return; page = next; render(); $('#content').focus(); }
@@ -183,8 +202,12 @@ async function refreshUrgentAnnouncements() {
     const next = await api('state', 'GET', undefined, target);
     if (user?.id !== userId || communityId !== target || !state) return;
     state.announcements = next.announcements;
+    state.neighborMessages = next.neighborMessages;
     const area = $('#urgent-notices');
     if (area) area.outerHTML = urgentBanners();
+    const inbox = $('#neighbor-inbox-notice');
+    if (inbox) inbox.outerHTML = neighborInboxNotice();
+    if (page === 'messages' && $('#neighbor-message-list')) $('#neighbor-message-list').innerHTML = neighborMessageCards(false);
   } catch { /* Un fallo temporal no interrumpe el formulario del vecino. */ }
   finally { refreshingUrgent = false; }
 }
@@ -256,6 +279,10 @@ document.addEventListener('submit', async event => {
     else if (form.classList.contains('document-status-form')) await api(`documents/${form.dataset.id}`, 'PATCH', { action: form.dataset.action, reviewed: body.reviewed === 'on' }, target);
     else if (form.id === 'advice-form') { await api(form.dataset.id ? `advice/${form.dataset.id}` : 'advice', form.dataset.id ? 'PATCH' : 'POST', { ...body, action: 'edit' }, target); editingAdvice = ''; }
     else if (form.classList.contains('advice-status-form')) { await api(`advice/${form.dataset.id}`, 'PATCH', { action: form.dataset.action, reviewed: body.reviewed === 'on' }, target); editingAdvice = ''; }
+    else if (form.id === 'neighbor-contact-form') {
+      await api('neighbor-messages', 'POST', body, target); successMessage = 'Aviso particular enviado al portal del vecino';
+    }
+    else if (form.classList.contains('read-neighbor-message-form')) await api(`neighbor-messages/${form.dataset.id}`, 'PATCH', { action: 'read' }, target);
     else if (form.id === 'ticket-form') { await api('tickets', 'POST', body, target); pendingQuestion = ''; serviceCategory = 'General'; }
     else if (form.id === 'private-request-form') await api('service-requests', 'POST', body, target);
     else if (form.classList.contains('private-reply-form')) await api(`service-requests/${form.dataset.id}`, 'PATCH', body, form.dataset.community);

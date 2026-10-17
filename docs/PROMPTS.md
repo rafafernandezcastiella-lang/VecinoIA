@@ -174,3 +174,9 @@ Resultado: despliegue `73e3633` verificado, con cero consultas comunitarias y ce
 ## 026 — Nombre de comunidad en la cabecera
 
 17 de octubre de 2026. El usuario pide quitar la etiqueta con el nombre encima de «Tu comunidad, más cerca» y ampliar el nombre de la barra superior. Se retira la etiqueta repetida de las cabeceras de contenido y se aumenta el nombre superior hasta 28 px, adaptable desde 20 px. Se comprueba visualmente a 1440, 390 y 320 px y con el nombre de Plaza Mayor, sin desbordamiento. No se modifican datos ni funciones.
+
+## 027 — Contacto individual del administrador y orden de bienvenida
+
+17 de octubre de 2026. El usuario pide sustituir la tarjeta «¿Necesitas hablar con el administrador?» en la vista del administrador por «Contacto con los vecinos», para avisos a un vecino concreto. Aclara con captura que también debe retirarse el botón «Hablar con el administrador» del bloque principal solo en esa vista. Se conservan ambos accesos para residentes y se añaden formulario de destinatario autorizado, bandeja de enviados, recepción privada del vecino y marcado de lectura. No se envía correo ni se mezclan consultas privadas de servicios.
+
+Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenido a casa» al inicio. Se coloca como primer elemento de la portada, antes de «Tu comunidad, más cerca», manteniendo los avisos urgentes por encima de la portada. Se verifica contacto y privacidad con veintiséis pruebas y recorrido de navegador, además de presentación en escritorio y móvil. No se crean comunicaciones de prueba en el servicio público.

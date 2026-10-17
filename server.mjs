@@ -24,6 +24,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
   let store = existsSync(dataFile) ? JSON.parse(readFileSync(dataFile, 'utf8')) : { tickets: [], announcements: [] };
   store.documentRequests ||= [];
   store.serviceRequests ||= [];
+  store.neighborMessages ||= [];
   store.announcementDeletions ||= [];
   store.advice ||= seedAdvice(communities);
   store.documents ||= communities.flatMap(c => c.documents.map(d => ({ ...d, communityId: c.id, status: 'published', processingStatus: 'ready', origin: 'demo', createdAt: '2026-10-13T00:00:00Z' })));
@@ -117,6 +118,8 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         ...community,
         assistant: assistant.status,
         advice: store.advice.filter(a => a.communityId === community.id && (user.role !== 'resident' || a.status === 'published')),
+        neighborMessages: store.neighborMessages.filter(m => m.communityId === community.id && (user.role !== 'resident' || m.recipientId === user.id)),
+        ...(user.role !== 'resident' ? { residents: users.filter(u => u.role === 'resident' && u.communityIds.includes(community.id)).map(({ id, name }) => ({ id, name })) } : {}),
         documents: publishedDocs(community.id).map(documentView),
         faqs: undefined,
         ...(user.role !== 'resident' ? { managedDocuments: store.documents.filter(d => d.communityId === community.id).map(documentView) } : {}),
@@ -226,6 +229,21 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
           }
           return reply(200, answer);
         } finally { assistantActive.delete(user.id); }
+      }
+      if (url.pathname === '/api/neighbor-messages' && req.method === 'POST') {
+        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede enviar avisos particulares' });
+        const recipient = users.find(u => u.id === body.recipientId && u.role === 'resident' && u.communityIds.includes(community.id));
+        if (!recipient || !validText(body.subject, 120) || !validText(body.message, 2000)) return reply(400, { error: 'Elige un vecino de esta comunidad y completa asunto y mensaje' });
+        const item = { id: randomUUID(), communityId: community.id, recipientId: recipient.id, recipient: recipient.name, senderId: user.id, sender: user.name, subject: body.subject.trim(), message: body.message.trim(), createdAt: new Date().toISOString(), readAt: null };
+        store.neighborMessages.unshift(item); save(); return reply(201, item);
+      }
+      if (url.pathname.startsWith('/api/neighbor-messages/') && req.method === 'PATCH') {
+        const item = store.neighborMessages.find(m => m.id === url.pathname.split('/').pop() && m.communityId === community.id);
+        if (!item) return reply(404, { error: 'Aviso no encontrado' });
+        if (user.role !== 'resident' || item.recipientId !== user.id) return reply(403, { error: 'Solo el vecino destinatario puede marcar su aviso como leído' });
+        if (body.action !== 'read') return reply(400, { error: 'Acción no válida' });
+        if (!item.readAt) { item.readAt = new Date().toISOString(); save(); }
+        return reply(200, item);
       }
       if (url.pathname === '/api/tickets/clear-completed' && req.method === 'POST') {
         if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede eliminar consultas completadas' });

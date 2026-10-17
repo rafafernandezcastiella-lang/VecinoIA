@@ -38,6 +38,36 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Avisos particulares de administración: destinatario, comunidad, lectura y persistencia', async () => {
+  const f=await fixture();
+  try {
+    let admin=await f.login('admin.olivos'),resident=await f.login('vecino.olivos');
+    const other=await f.login('vecino.olivos2'),plaza=await f.login('vecino.plaza');
+    const initial=(await f.request('state?community=olivos','GET',undefined,admin)).body;
+    assert.equal(initial.residents.length,2);assert.ok(initial.residents.every(r=>!r.passwordHash&&!r.salt&&!r.username));
+    const neighborState=(await f.request('state?community=olivos','GET',undefined,resident)).body;assert.equal(neighborState.residents,undefined);
+    const body={recipientId:resident.user.id,subject:'Recogida de llave ficticia',message:'Puedes recoger la llave de demostración en administración.',senderId:other.user.id};
+    assert.equal((await f.request('neighbor-messages?community=olivos','POST',body,resident)).status,403);
+    assert.equal((await f.request('neighbor-messages?community=olivos','POST',body,admin,{'X-CSRF-Token':'incorrecto'})).status,403);
+    assert.equal((await f.request('neighbor-messages?community=plaza','POST',body,admin)).status,403);
+    assert.equal((await f.request('neighbor-messages?community=olivos','POST',{...body,recipientId:plaza.user.id},admin)).status,400);
+    assert.equal((await f.request('neighbor-messages?community=olivos','POST',{...body,recipientId:admin.user.id},admin)).status,400);
+    const sent=await f.request('neighbor-messages?community=olivos','POST',body,admin);assert.equal(sent.status,201);assert.equal(sent.body.senderId,admin.user.id);assert.equal(sent.body.readAt,null);
+    const id=sent.body.id,path=`neighbor-messages/${id}?community=olivos`;
+    assert.equal((await f.request('state?community=olivos','GET',undefined,resident)).body.neighborMessages.length,1);
+    assert.equal((await f.request('state?community=olivos','GET',undefined,other)).body.neighborMessages.length,0);
+    assert.equal((await f.request('state?community=plaza','GET',undefined,plaza)).body.neighborMessages.length,0);
+    assert.equal((await f.request(path,'PATCH',{action:'read'},admin)).status,403);
+    assert.equal((await f.request(path,'PATCH',{action:'read'},other)).status,403);
+    const read=await f.request(path,'PATCH',{action:'read'},resident);assert.equal(read.status,200);assert.ok(read.body.readAt);
+    assert.equal((await f.request(path,'PATCH',{action:'read'},resident)).body.readAt,read.body.readAt);
+    await f.request('tickets/clear-completed?community=olivos','POST',{},admin);
+    await f.restart();admin=await f.login('admin.olivos');resident=await f.login('vecino.olivos');
+    const state=(await f.request('state?community=olivos','GET',undefined,admin)).body;assert.equal(state.neighborMessages[0].id,id);assert.equal(state.neighborMessages[0].readAt,read.body.readAt);
+    assert.equal(state.serviceRequests,undefined);assert.equal((await f.request('service-requests','GET',undefined,admin)).status,403);
+  }finally{await f.close();}
+});
+
 test('Editar y eliminar avisos ordinarios, incluidos precargados, sin reaparecer tras reiniciar', async () => {
   const f = await fixture();
   try {

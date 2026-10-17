@@ -105,6 +105,7 @@ main { max-width: 1320px; padding: 38px 44px; }
 .community-plaque small { display: block; font-size: 9px; color: #d3e4f6; letter-spacing: 1.3px; margin-bottom: 7px; }
 .community-plaque strong { display: block; font-size: 15px; font-weight: 600; }
 .community-plaque div > span { display: block; font-size: 11px; margin-top: 6px; color: #d3e4f6; }
+.welcome > .community-plaque { width: fit-content; max-width: 100%; margin: 0 0 24px; color: white; }
 .stats { margin: 0 0 28px; gap: 18px; }
 .stat { background: rgba(255, 255, 255, .98); border-color: white; border-top: 3px solid var(--accent); padding: 20px 24px; border-radius: 10px; box-shadow: 0 4px 18px #00234412; }
 .stat strong { color: var(--navy); font-size: 29px; }
@@ -149,6 +150,7 @@ footer { background: rgba(0, 35, 70, .96); color: #d8e5f2; display: flex; flex-w
   .hero-actions { display: grid; }
   .hero-actions .btn { width: 100%; }
   .community-plaque { width: 100%; max-width: none; }
+  .welcome > .community-plaque { width: 100%; }
   .stats { gap: 8px; }
   .stat { padding: 16px 10px; }
   .stat strong { font-size: 24px; }
