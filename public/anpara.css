@@ -56,7 +56,7 @@ nav button.active:hover { background: var(--accent); }
   color: var(--navy);
   border-bottom: 3px solid var(--accent);
 }
-#community-name { font-weight: 700; }
+#community-name { font-weight: 750; font-size: clamp(20px, 2vw, 28px); line-height: 1.25; overflow-wrap: anywhere; min-width: 0; }
 .role-label select { color: var(--navy); }
 main { max-width: 1320px; padding: 38px 44px; }
 .heading {
@@ -66,13 +66,11 @@ main { max-width: 1320px; padding: 38px 44px; }
   border: 1px solid rgba(192, 192, 192, .35);
   color: white;
 }
-.heading .eyebrow { color: #d6e6f7; }
 .heading h1 { color: white; font-weight: 650; letter-spacing: -1px; }
 .heading .lead { color: #e0eaf5; margin-bottom: 0; }
 .welcome { min-height: 395px; position: relative; }
 .welcome .heading { background: transparent; border: 0; padding: 0; margin: 0 0 26px; }
 .welcome h1 { font-size: clamp(30px, 3.3vw, 48px); font-weight: 650; line-height: 1.14; }
-.welcome .heading .eyebrow { display: inline-block; background: rgba(0, 45, 90, .86); padding: 8px 12px; border-radius: 5px; color: white; letter-spacing: 1.4px; }
 .welcome .lead { text-shadow: 0 1px 4px #002344; }
 .hero {
   background: transparent;

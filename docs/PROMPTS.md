@@ -170,3 +170,7 @@ Resultado: despliegue `73e3633` verificado, con cero consultas comunitarias y ce
 ## 025 — Edición y eliminación de avisos ordinarios
 
 17 de octubre de 2026. El usuario pregunta cómo editar o eliminar un aviso ordinario desde administración. Como esas operaciones no estaban disponibles, se añaden controles en «Gestionar avisos ordinarios», edición de título/contenido y eliminación con confirmación. Se soportan avisos nuevos y precargados sin duplicar o resucitar ejemplos al reiniciar, con validación por comunidad, rol y CSRF. Las acciones de ordinarios no afectan a urgentes, documentos ni otras comunidades. Veinticinco pruebas automatizadas pasan; la comprobación de navegador se realiza con datos temporales, sin editar ni eliminar avisos públicos del usuario.
+
+## 026 — Nombre de comunidad en la cabecera
+
+17 de octubre de 2026. El usuario pide quitar la etiqueta con el nombre encima de «Tu comunidad, más cerca» y ampliar el nombre de la barra superior. Se retira la etiqueta repetida de las cabeceras de contenido y se aumenta el nombre superior hasta 28 px, adaptable desde 20 px. Se comprueba visualmente a 1440, 390 y 320 px y con el nombre de Plaza Mayor, sin desbordamiento. No se modifican datos ni funciones.

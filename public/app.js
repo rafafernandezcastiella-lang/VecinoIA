@@ -67,7 +67,7 @@ async function load() {
   }
   catch (error) { loading = false; $('#content').innerHTML = '<div class="empty">No se pudo cargar la comunidad. <button class="btn" data-action="retry">Reintentar</button></div>'; notice(error.message); }
 }
-const heading = (title, description) => `<div class="heading"><div class="eyebrow">${escape(state.name)}</div><h1>${title}</h1><p class="lead">${description}</p></div>`;
+const heading = (title, description) => `<div class="heading"><h1>${title}</h1><p class="lead">${description}</p></div>`;
 const announcement = a => `<article class="card ${a.urgency === 'urgent' ? 'urgent-card' : ''}"><span class="tag">${a.urgency === 'urgent' ? (a.active === false ? 'Urgente · Finalizado' : 'Aviso urgente') : 'Aviso ordinario'}</span><div class="meta">${escape(a.category)} · ${date(a.date)}</div><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p></article>`;
 function urgentBanners() {
   const urgent = state.announcements.filter(a => a.urgency === 'urgent' && a.active !== false);
