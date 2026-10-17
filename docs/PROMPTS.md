@@ -166,3 +166,7 @@ Resultado: despliegue `73e3633` verificado, con cero consultas comunitarias y ce
 ## 024 — Avisos ordinarios, urgentes y correo simulado
 
 17 de octubre de 2026. El usuario solicita clasificación ordinaria/urgente, banner muy destacado para vecinos y correo urgente. Se aclara la configuración de envío y el usuario elige «Prepararlo para la demo, sin enviar correos reales». Se implementa selector, banner activo con énfasis suave, movimiento reducido, actualización periódica sin perder formularios y botón de finalización. Se registra simulación por cuentas autorizadas de vecinos de la comunidad, con cero envíos reales y vista de correo de ejemplo. No hay integración con un proveedor de correo ni envío real. Veinticuatro pruebas pasan y se verifica el recorrido con navegador en escritorio/móvil y contextos separados. Las pruebas no crean avisos en el servicio público.
+
+## 025 — Edición y eliminación de avisos ordinarios
+
+17 de octubre de 2026. El usuario pregunta cómo editar o eliminar un aviso ordinario desde administración. Como esas operaciones no estaban disponibles, se añaden controles en «Gestionar avisos ordinarios», edición de título/contenido y eliminación con confirmación. Se soportan avisos nuevos y precargados sin duplicar o resucitar ejemplos al reiniciar, con validación por comunidad, rol y CSRF. Las acciones de ordinarios no afectan a urgentes, documentos ni otras comunidades. Veinticinco pruebas automatizadas pasan; la comprobación de navegador se realiza con datos temporales, sin editar ni eliminar avisos públicos del usuario.

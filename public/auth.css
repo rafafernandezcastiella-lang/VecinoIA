@@ -57,3 +57,6 @@
 .email-simulation { padding: 12px; border-radius: 8px; background: #edf4fa; color: #002d5a; margin: 16px 0; }
 @keyframes urgent-emphasis { 50% { box-shadow: 0 0 0 6px #b5410030; } }
 @media (prefers-reduced-motion: reduce) { .urgent-banner { animation: none; } }
+.ordinary-management { margin-top: 28px; }
+.edit-announcement-form { margin-top: 16px; }
+.delete-announcement-form { margin-top: 16px; }

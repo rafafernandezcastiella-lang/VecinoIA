@@ -4,6 +4,8 @@
 
 ## Presentación y vigencia
 
+En Administración, «Gestionar avisos ordinarios» permite desplegar «Editar aviso», modificar título/contenido y guardar. «Eliminar aviso» solicita confirmación y elimina su disponibilidad para los vecinos. También admite los ejemplos precargados: se guarda una sustitución al editar o una marca de eliminación por comunidad para que no reaparezcan tras reiniciar. Los avisos urgentes mantienen su operación separada de finalización, sin convertirse ni borrarse por estas acciones ordinarias.
+
 Un ordinario se muestra en las tarjetas del portal. Un urgente activo se muestra además en un banner anterior al contenido, en todas las secciones de la comunidad. Lleva etiqueta visible, título, mensaje y una animación suave de énfasis, sin ocultar texto ni parpadeos rápidos. Respeta prefers-reduced-motion. El vecino no lo descarta por su cuenta; administración puede Finalizar aviso urgente y así retirar el banner conservando la ficha como finalizada.
 
 El portal del vecino visible consulta actualizaciones cada treinta segundos y al volver a la pestaña. Actualiza el área urgente sin rehacer formularios ni borrar textos sin enviar. Se mantienen los controles de comunidad y sesión. No es una notificación push del sistema operativo ni un aviso con entrega garantizada en tiempo real.

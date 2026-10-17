@@ -24,10 +24,16 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
   let store = existsSync(dataFile) ? JSON.parse(readFileSync(dataFile, 'utf8')) : { tickets: [], announcements: [] };
   store.documentRequests ||= [];
   store.serviceRequests ||= [];
+  store.announcementDeletions ||= [];
   store.advice ||= seedAdvice(communities);
   store.documents ||= communities.flatMap(c => c.documents.map(d => ({ ...d, communityId: c.id, status: 'published', processingStatus: 'ready', origin: 'demo', createdAt: '2026-10-13T00:00:00Z' })));
   const uploadsDir = join(dirname(dataFile), 'uploads');
   const publishedDocs = communityId => store.documents.filter(d => d.communityId === communityId && d.status === 'published' && d.processingStatus === 'ready');
+  const communityAnnouncements = community => {
+    const own = store.announcements.filter(a => a.communityId === community.id);
+    return [...own, ...community.announcements.filter(a => !own.some(saved => saved.id === a.id))]
+      .filter(a => !store.announcementDeletions.includes(`${community.id}/${a.id}`));
+  };
   // Las antiguas consultas del catálogo pasan al canal privado sin perder datos.
   const legacyServices = store.tickets.filter(t => ['Energía', 'Seguros', 'Mantenimiento'].includes(t.category));
   if (legacyServices.length) {
@@ -114,7 +120,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         documents: publishedDocs(community.id).map(documentView),
         faqs: undefined,
         ...(user.role !== 'resident' ? { managedDocuments: store.documents.filter(d => d.communityId === community.id).map(documentView) } : {}),
-        announcements: [...store.announcements.filter(a => a.communityId === community.id), ...community.announcements].map(a => {
+        announcements: communityAnnouncements(community).map(a => {
           const { emailNotification, ...visible } = a;
           return user.role === 'resident' ? visible : a;
         }),
@@ -277,9 +283,21 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         store.announcements.unshift(announcement); save(); return reply(201, announcement);
       }
       if (url.pathname.startsWith('/api/announcements/') && req.method === 'PATCH') {
-        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede finalizar avisos urgentes' });
-        const item = store.announcements.find(a => a.id === url.pathname.split('/').pop() && a.communityId === community.id);
+        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede gestionar avisos' });
+        const item = communityAnnouncements(community).find(a => a.id === url.pathname.split('/').pop());
         if (!item) return reply(404, { error: 'Aviso no encontrado en esta comunidad' });
+        if (['edit', 'delete'].includes(body.action)) {
+          if (item.urgency === 'urgent') return reply(400, { error: 'Estas acciones solo se aplican a avisos ordinarios' });
+          if (body.action === 'edit') {
+            if (!validText(body.title, 120) || !validText(body.body, 2000)) return reply(400, { error: 'Revisa el título y el contenido' });
+            const updated = { ...item, communityId: community.id, urgency: 'ordinary', title: body.title.trim(), body: body.body.trim(), updatedAt: new Date().toISOString() };
+            store.announcements = store.announcements.filter(a => a.communityId !== community.id || a.id !== item.id);
+            store.announcements.unshift(updated); save(); return reply(200, updated);
+          }
+          store.announcements = store.announcements.filter(a => a.communityId !== community.id || a.id !== item.id);
+          store.announcementDeletions.push(`${community.id}/${item.id}`);
+          save(); return reply(200, { deleted: true });
+        }
         if (body.action !== 'end' || item.urgency !== 'urgent') return reply(400, { error: 'Acción no válida para este aviso' });
         item.active = false; item.endedAt = new Date().toISOString(); save(); return reply(200, item);
       }

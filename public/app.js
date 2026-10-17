@@ -136,12 +136,16 @@ function admin() {
       ${[['Pendiente', 'Pendientes'], ['En revisión', 'En curso'], ['Resuelta', 'Terminadas']].map(([status, label]) => `<div class="stat"><strong>${state.tickets.filter(t => t.status === status).length}</strong><span>${label}</span></div>`).join('')}
     </div>
     <section class="card communications-toolbar"><div><label for="admin-filter">Mostrar comunicaciones</label><select id="admin-filter">${[['Todas', 'Todas'], ['Pendiente', 'Pendientes'], ['En revisión', 'En curso'], ['Resuelta', 'Terminadas']].map(([value, label]) => `<option value="${value}" ${value === adminFilter ? 'selected' : ''}>${label}</option>`).join('')}</select><p>${filtered.length} de ${state.tickets.length} comunicaciones</p></div><form id="clear-completed-form" class="form"><p>Elimina solo las ${completed} terminadas de esta comunidad, también de la vista de sus vecinos.</p><button class="btn secondary" type="submit" ${completed ? '' : 'disabled'}>Eliminar completadas (${completed})</button></form></section>
-    <div class="columns"><section><h2>Consultas de ${escape(state.name)}</h2>${filtered.length ? filtered.map(t => ticketCard(t, true)).join('') : `<div class="empty">${state.tickets.length ? 'No hay comunicaciones con este estado.' : 'No hay comunicaciones. Las nuevas consultas e incidencias aparecerán aquí.'}</div>`}</section><section><h2>Publicar un aviso</h2><form class="card form" id="announcement-form"><label>Tipo de aviso<select name="urgency" id="announcement-urgency"><option value="ordinary">Ordinario · Sin urgencia</option><option value="urgent">Urgente · Banner destacado y correo simulado</option></select></label><p id="announcement-explanation" class="private-routing">Se publicará en los avisos de la comunidad, sin banner urgente ni notificación por correo.</p><label>Título<input name="title" required maxlength="120"></label><label>Contenido<textarea name="body" required maxlength="2000"></textarea></label><button class="btn" type="submit">Publicar aviso</button></form></section></div>` + announcementManagement();
+    <div class="columns"><section><h2>Consultas de ${escape(state.name)}</h2>${filtered.length ? filtered.map(t => ticketCard(t, true)).join('') : `<div class="empty">${state.tickets.length ? 'No hay comunicaciones con este estado.' : 'No hay comunicaciones. Las nuevas consultas e incidencias aparecerán aquí.'}</div>`}</section><section><h2>Publicar un aviso</h2><form class="card form" id="announcement-form"><label>Tipo de aviso<select name="urgency" id="announcement-urgency"><option value="ordinary">Ordinario · Sin urgencia</option><option value="urgent">Urgente · Banner destacado y correo simulado</option></select></label><p id="announcement-explanation" class="private-routing">Se publicará en los avisos de la comunidad, sin banner urgente ni notificación por correo.</p><label>Título<input name="title" required maxlength="120"></label><label>Contenido<textarea name="body" required maxlength="2000"></textarea></label><button class="btn" type="submit">Publicar aviso</button></form></section></div>` + announcementManagement() + ordinaryAnnouncementManagement();
 }
 
 function announcementManagement() {
   const notices = state.announcements.filter(a => a.urgency === 'urgent');
   return `<section class="urgent-management"><h2 class="outside-heading">Seguimiento de avisos urgentes</h2>${notices.length ? notices.map(a => `<article class="card"><span class="tag">${a.active === false ? 'Finalizado' : 'Urgente activo'}</span><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p><div class="email-simulation"><strong>Notificación por correo: simulada</strong><p>${a.emailNotification?.recipientCount || 0} cuentas de vecinos de esta comunidad incluidas. Correos reales enviados: 0.</p><p>Esta demo no envía correo real.</p><details><summary>Ver correo de demostración</summary><p><strong>Asunto:</strong> URGENTE · ${escape(state.name)} · ${escape(a.title)}</p><p class="announcement-body">${escape(a.body)}</p><p>Consulta el portal de tu comunidad para seguir las novedades.</p></details></div>${a.active === false ? '<p>El banner destacado ya no se muestra a los vecinos.</p>' : `<form class="end-announcement-form form" data-id="${escape(a.id)}"><button class="btn secondary" type="submit">Finalizar aviso urgente</button><p>Retira el banner destacado y conserva el comunicado en el historial de avisos.</p></form>`}</article>`).join('') : '<div class="empty">Los avisos urgentes y sus notificaciones simuladas aparecerán aquí.</div>'}</section>`;
+}
+function ordinaryAnnouncementManagement() {
+  const notices = state.announcements.filter(a => a.urgency !== 'urgent');
+  return `<section class="ordinary-management"><h2 class="outside-heading">Gestionar avisos ordinarios</h2><p class="note">Edita el título o contenido de un aviso. Si lo eliminas, dejará de aparecer también en el portal de los vecinos.</p>${notices.length ? notices.map(a => `<article class="card"><span class="tag">Ordinario</span><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p><details><summary>Editar aviso</summary><form class="edit-announcement-form form" data-id="${escape(a.id)}"><label>Título<input name="title" value="${escape(a.title)}" required maxlength="120"></label><label for="ordinary-body-${escape(a.id)}">Contenido</label><textarea id="ordinary-body-${escape(a.id)}" name="body" required maxlength="2000">${escape(a.body)}</textarea><button class="btn" type="submit">Guardar cambios</button></form></details><form class="delete-announcement-form form" data-id="${escape(a.id)}" data-title="${escape(a.title)}"><button class="btn secondary" type="submit">Eliminar aviso</button></form></article>`).join('') : '<div class="empty">No hay avisos ordinarios en esta comunidad.</div>'}</section>`;
 }
 function advice() {
   const staff = role !== 'resident';
@@ -234,6 +238,7 @@ document.addEventListener('submit', async event => {
   }
   if (form.id === 'ask-form') { await ask(body.question.trim()); return; }
   if (loading) return;
+  if (form.classList.contains('delete-announcement-form') && !window.confirm(`¿Eliminar el aviso «${form.dataset.title}» de esta comunidad? Dejará de estar disponible para sus vecinos.`)) return;
   const button = form.querySelector('button[type="submit"]');
   const target = communityId; loading = true; button.disabled = true; $('#community').disabled = true;
   try {
@@ -261,6 +266,14 @@ document.addEventListener('submit', async event => {
       successMessage = published.urgency === 'urgent' ? `Aviso urgente publicado. Correo simulado para ${published.emailNotification.recipientCount} vecinos; no se han enviado correos reales.` : 'Aviso ordinario publicado';
     }
     else if (form.classList.contains('end-announcement-form')) await api(`announcements/${form.dataset.id}`, 'PATCH', { action: 'end' }, target);
+    else if (form.classList.contains('edit-announcement-form')) {
+      await api(`announcements/${form.dataset.id}`, 'PATCH', { action: 'edit', title: body.title, body: body.body }, target);
+      successMessage = 'Aviso ordinario actualizado';
+    }
+    else if (form.classList.contains('delete-announcement-form')) {
+      await api(`announcements/${form.dataset.id}`, 'PATCH', { action: 'delete' }, target);
+      successMessage = 'Aviso ordinario eliminado';
+    }
     else if (form.classList.contains('reply-form')) await api(`tickets/${form.dataset.id}`, 'PATCH', body, target);
     const [next, requests] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests')]);
     state = next; privateRequests = requests; render();

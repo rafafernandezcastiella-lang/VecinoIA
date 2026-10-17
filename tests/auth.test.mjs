@@ -38,6 +38,36 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Editar y eliminar avisos ordinarios, incluidos precargados, sin reaparecer tras reiniciar', async () => {
+  const f = await fixture();
+  try {
+    let admin=await f.login('admin.olivos');const resident=await f.login('vecino.olivos'),manager=await f.login('gestion');
+    const state = async (session=admin,community='olivos') => (await f.request(`state?community=${community}`,'GET',undefined,session)).body;
+    const initial=await state();const seed=initial.announcements[0];
+    const path=`announcements/${seed.id}?community=olivos`, edit={action:'edit',title:'Horario actualizado',body:'Nuevo horario ficticio.'};
+    assert.equal((await f.request(path,'PATCH',edit,resident)).status,403);
+    assert.equal((await f.request(path,'PATCH',edit,admin,{'X-CSRF-Token':'incorrecto'})).status,403);
+    assert.equal((await f.request(`announcements/${seed.id}?community=plaza`,'PATCH',edit,admin)).status,403);
+    assert.equal((await f.request(`announcements/${seed.id}?community=plaza`,'PATCH',edit,manager)).status,404);
+    assert.equal((await f.request(path,'PATCH',{...edit,title:''},admin)).status,400);
+    assert.equal((await f.request(path,'PATCH',edit,admin)).status,200);
+    let visible=await state(resident);assert.equal(visible.announcements.filter(a=>a.id===seed.id).length,1);assert.equal(visible.announcements.find(a=>a.id===seed.id).title,edit.title);
+    await f.restart();admin=await f.login('admin.olivos');assert.equal((await state()).announcements.find(a=>a.id===seed.id).body,edit.body);
+    assert.equal((await f.request(path,'PATCH',{action:'delete'},admin)).status,200);
+    assert.ok(!(await state()).announcements.some(a=>a.id===seed.id));
+    await f.restart();admin=await f.login('admin.olivos');assert.ok(!(await state()).announcements.some(a=>a.id===seed.id));
+    assert.equal((await f.request(path,'PATCH',{action:'delete'},admin)).status,404);
+    const created=(await f.request('announcements?community=olivos','POST',{title:'Nueva ficha',body:'Contenido nuevo'},admin)).body;
+    assert.equal((await f.request(`announcements/${created.id}?community=olivos`,'PATCH',edit,admin)).status,200);
+    assert.equal((await f.request(`announcements/${created.id}?community=olivos`,'PATCH',{action:'delete'},admin)).status,200);
+    const urgent=(await f.request('announcements?community=olivos','POST',{title:'Urgente ficticio',body:'Contenido urgente',urgency:'urgent'},admin)).body;
+    assert.equal((await f.request(`announcements/${urgent.id}?community=olivos`,'PATCH',{action:'delete'},admin)).status,400);
+    assert.ok((await state()).announcements.some(a=>a.id===urgent.id));
+    assert.equal((await state(await f.login('administrador'),'plaza')).announcements.length,2);
+    assert.equal((await state()).documents.length,initial.documents.length);
+  } finally {await f.close();}
+});
+
 test('Avisos ordinarios y urgentes: permisos, simulación por comunidad, finalización y persistencia', async () => {
   const f = await fixture();
   try {
