@@ -132,3 +132,9 @@ Edge verifica el enlace «quitar anuncio», desaparición y contador, recarga, o
 Veintinueve pruebas aprobadas. Se verifica inbox por usuario, rol y comunidad, aislamiento de servicios particulares, simulación de notificaciones solo para personal autorizado, lectura con CSRF y persistencia; directorio con datos válidos, vinculación restringida, privacidad para residentes y persistencia de edición/alta sin crear cuentas.
 
 En Edge se comprueba selector oculto al vecino, campana que detecta consulta nueva sin recargar, lectura que disminuye el recuento del administrador, gestor que recibe la particular que no ve el administrador, alta/edición de contactos, recarga, otra comunidad sin esos contactos y móvil sin desbordamiento ni errores. Capturas `.preview/staff-inbox-unread.png`, `.preview/resident-directory.png` y `.preview/resident-directory-mobile.png`. Datos temporales y cero correos reales.
+
+## Campana del vecino — 18 de octubre
+
+Treinta pruebas automatizadas aprobadas. Se verifica destinatario y comunidad, rechazo de acceso de personal y otros vecinos, CSRF, revisión nueva de respuesta y rechazo de lectura obsoleta, ausencia de duplicados al guardar estado, lectura de avisos particulares sincronizada, correo simulado con cero envíos y persistencia de lectura tras reiniciar.
+
+Edge comprueba campana al responder Administración y Gestión, actualización automática, apertura del contenido y bajada del contador, avisos individuales, recarga y móvil de 390 px sin desbordamiento ni errores JavaScript. Datos temporales; sin mensajes de prueba ni envíos reales en producción. Capturas locales .preview/resident-bell.png y .preview/resident-bell-mobile.png.

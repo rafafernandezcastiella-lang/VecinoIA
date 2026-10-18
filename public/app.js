@@ -67,7 +67,7 @@ async function load() {
   loading = true;
   $('#content').innerHTML = '<p>Cargando tu comunidad…</p>';
   try {
-    const [next, requests, inbox] = await Promise.all([api('state'), role === 'admin' ? Promise.resolve([]) : api('service-requests'), role === 'resident' ? Promise.resolve(null) : api('staff-inbox')]);
+    const [next, requests, inbox] = await Promise.all([api('state'), role === 'admin' ? Promise.resolve([]) : api('service-requests'), api(role === 'resident' ? 'resident-inbox' : 'staff-inbox')]);
     state = next; privateRequests = requests; if(inbox)staffInboxData=inbox; loading = false; render();
   }
   catch (error) { loading = false; $('#content').innerHTML = '<div class="empty">No se pudo cargar la comunidad. <button class="btn" data-action="retry">Reintentar</button></div>'; notice(error.message); }
@@ -104,7 +104,24 @@ function messages() {
   return heading('Tus avisos particulares.', 'Comunicaciones que la administración ha dirigido únicamente a tu usuario.') + `<div class="note">Estos avisos no se publican en el tablón de la comunidad. Puedes registrar su lectura desde aquí.</div><div id="neighbor-message-list">${neighborMessageCards(false)}</div>`;
 }
 function staffBell() {
-  return role === 'resident' ? '' : `<button class="btn secondary inbox-bell" data-page="staffMessages" aria-label="${staffInboxData.unreadCount} mensajes sin leer"><span aria-hidden="true">🔔</span><span>Mensajes</span><span class="unread-badge ${staffInboxData.unreadCount ? 'has-unread' : ''}" aria-live="polite">${staffInboxData.unreadCount}</span></button>`;
+  return `<button class="btn secondary inbox-bell" data-page="${role === 'resident' ? 'residentMessages' : 'staffMessages'}" aria-label="${staffInboxData.unreadCount} mensajes sin leer"><span aria-hidden="true">🔔</span><span>Mensajes</span><span class="unread-badge ${staffInboxData.unreadCount ? 'has-unread' : ''}" aria-live="polite">${staffInboxData.unreadCount}</span></button>`;
+}
+function residentInboxCards() {
+  return staffInboxData.items.length ? staffInboxData.items.map(i => `<article class="card"><span class="tag">${i.read ? 'Leído' : 'Sin leer'}</span><div class="meta">${escape(i.sender)} · ${date(i.createdAt)} · ${escape(i.communityName)}</div><h3>${escape(i.subject)}</h3>${i.email ? '<p class="meta">Aviso de correo simulado · No enviado</p>' : ''}<button class="btn secondary" data-open-resident="${escape(i.id)}" data-kind="${i.kind}">${i.kind === 'neighbor' ? 'Ver aviso' : 'Ver respuesta'}</button></article>`).join('') : '<div class="empty">Todavía no tienes respuestas ni avisos particulares.</div>';
+}
+function residentMessages() {
+  return heading('Tus respuestas y avisos.', 'Comunicaciones dirigidas a ti por Administración y Gestión VecinoIA.') + '<div class="note">La campana cuenta las comunicaciones sin leer. Pulsa Ver respuesta o Ver aviso para abrirlas y marcarlas como leídas. Se actualiza automáticamente cada 30 segundos.</div><div class="email-simulation"><strong>Aviso por correo: simulación de la demo</strong><p>Las nuevas respuestas y avisos registran una notificación de correo para tu usuario. No se envían correos reales.</p></div><button class="btn secondary" data-action="retry">Actualizar bandeja</button><div id="resident-inbox-list">' + residentInboxCards() + '</div>';
+}
+async function openResidentCommunication(id,kind) {
+  if(loading)return;
+  const item=staffInboxData.items.find(i=>i.id===id&&i.kind===kind);if(!item)return;
+  loading=true;stateVersion++;
+  try {
+    await api('resident-inbox/read','POST',{id,kind,notificationId:item.notificationId});
+    communityId=item.communityId;$('#community').value=communityId;privateFilter='Todas';
+    page=kind==='service'?'services':kind==='neighbor'?'messages':'tickets';
+    await load();document.getElementById(`communication-${kind}-${id}`)?.scrollIntoView({block:'center'});
+  } catch(error){notice(error.message);}finally{loading=false;}
 }
 function staffInboxCards() {
   const items=staffInboxData.items.filter(i=>staffInboxFilter==='all'||!i.read);
@@ -223,11 +240,11 @@ function render() {
   const basePages = role === 'resident' ? [...pages, ['messages', '✉', 'Avisos particulares']] : pages.filter(([id]) => id !== 'services');
   const navigation = role !== 'resident' ? [...basePages, ['admin', '▦', 'Administración'], ['staffMessages', '♧', 'Bandeja de mensajes'], ['directory', '▤', 'Directorio de vecinos'], ['neighborContact', '✉', 'Contacto con los vecinos'], ['knowledge', '▤', 'Gestionar documentos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : []), ['deliveries', '↗', 'Envío de documentos']] : basePages;
   if (['admin', 'deliveries', 'knowledge', 'neighborContact', 'staffMessages', 'directory'].includes(page) && role === 'resident') page = 'home';
-  if (page === 'messages' && role !== 'resident') page = 'home';
+  if (['messages','residentMessages'].includes(page) && role !== 'resident') page = 'home';
   if ((page === 'serviceInbox' && role !== 'manager') || (page === 'services' && role !== 'resident')) page = 'home';
   $('#nav').innerHTML = navigation.map(([id, icon, label]) => `<button data-page="${id}" class="${id === page ? 'active' : ''}" ${id === page ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span> &nbsp; ${label}</button>`).join('');
   $('#staff-inbox-slot').innerHTML = staffBell();
-  $('#content').innerHTML = urgentBanners() + neighborInboxNotice() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice, neighborContact, messages, staffMessages, directory })[page]();
+  $('#content').innerHTML = urgentBanners() + neighborInboxNotice() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice, neighborContact, messages, staffMessages, residentMessages, directory })[page]();
   document.title = `VecinoIA · ${state.name}`;
 }
 function navigate(next) { if (loading) return; page = next; render(); $('#content').focus(); }
@@ -237,10 +254,13 @@ async function refreshUrgentAnnouncements() {
   const target = communityId, userId = user.id, version = stateVersion;
   refreshingUrgent = true;
   try {
-    const next = await api('state', 'GET', undefined, target);
+    const [next, residentInbox] = await Promise.all([api('state', 'GET', undefined, target), api('resident-inbox')]);
     if (user?.id !== userId || communityId !== target || !state || loading || stateVersion !== version) return;
     state.announcements = next.announcements;
     state.neighborMessages = next.neighborMessages;
+    staffInboxData = residentInbox;
+    $('#staff-inbox-slot').innerHTML = staffBell();
+    if(page === 'residentMessages' && $('#resident-inbox-list')) $('#resident-inbox-list').innerHTML = residentInboxCards();
     const area = $('#urgent-notices');
     if (area) area.outerHTML = urgentBanners();
     const inbox = $('#neighbor-inbox-notice');
@@ -266,6 +286,8 @@ async function ask(question) {
   finally { loading = false; if ($('#ask-form button')) $('#ask-form button').disabled = false; }
 }
 document.addEventListener('click', event => {
+  const residentMessage = event.target.closest('[data-open-resident]');
+  if(residentMessage){openResidentCommunication(residentMessage.dataset.openResident,residentMessage.dataset.kind);return;}
   const button = event.target.closest('button'); if (!button) return;
   if (button.id === 'logout') {
     if (loading) return;
@@ -352,7 +374,7 @@ document.addEventListener('submit', async event => {
       successMessage = 'Aviso ordinario eliminado';
     }
     else if (form.classList.contains('reply-form')) await api(`tickets/${form.dataset.id}`, 'PATCH', body, target);
-    const [next, requests, inbox] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests'), role === 'resident' ? Promise.resolve(null) : api('staff-inbox')]);
+    const [next, requests, inbox] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests'), api(role === 'resident' ? 'resident-inbox' : 'staff-inbox')]);
     if(inbox)staffInboxData=inbox;
     state = next; privateRequests = requests;
     if (dismissingAnnouncement) {

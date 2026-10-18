@@ -10,6 +10,7 @@ import { documentView, extractDocument, maxFileSize, supportedExtensions } from 
 import { createAssistant } from './src/assistant.mjs';
 import { adviceKinds, adviceCategories, seedAdvice } from './src/advice.mjs';
 import { staffInbox, readKey, simulateStaffEmail, validateResidentContact } from './src/staff-inbox.mjs';
+import { residentInbox, markResidentRead, notifyReply, simulatedEmail } from './src/resident-inbox.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const categories = ['General', 'Incidencia', 'Recibos'];
@@ -112,6 +113,15 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         return reply(200, { ok: true });
       }
       if (url.pathname === '/api/communities' && req.method === 'GET') return reply(200, communities.filter(c => user.communityIds.includes(c.id)).map(({ id, name }) => ({ id, name })));
+      if (['/api/resident-inbox', '/api/resident-inbox/read'].includes(url.pathname)) {
+        if (user.role !== 'resident') return reply(403, { error: 'Bandeja exclusiva del vecino destinatario' });
+        if (url.pathname === '/api/resident-inbox' && req.method === 'GET') return reply(200, residentInbox(store,user,communities));
+        if (url.pathname === '/api/resident-inbox/read' && req.method === 'POST') {
+          const item = residentInbox(store,user,communities).items.find(i => i.id === body.id && i.kind === body.kind && i.notificationId === body.notificationId);
+          if (!item) return reply(404, { error: 'Aviso no encontrado o respuesta actualizada. Actualiza la bandeja.' });
+          markResidentRead(store,item); save(); return reply(200,residentInbox(store,user,communities));
+        }
+      }
       if (url.pathname === '/api/staff-inbox' && req.method === 'GET') {
         if (!['admin','manager'].includes(user.role)) return reply(403,{error:'Bandeja exclusiva de administración y gestión'});
         return reply(200,staffInbox(store,user,communities));
@@ -207,6 +217,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         const item = store.serviceRequests.find(r => r.id === url.pathname.split('/').pop() && r.communityId === community.id);
         if (!item) return reply(404, { error: 'Consulta particular no encontrada' });
         if (!statuses.includes(body.status) || typeof body.reply !== 'string' || body.reply.length > 2000) return reply(400, { error: 'Estado o respuesta no válidos' });
+        notifyReply(item, body.reply.trim());
         item.status = body.status; item.reply = body.reply.trim(); item.updatedAt = new Date().toISOString();
         const key=readKey(user.id,'service',item.id);if(!store.staffReads.includes(key))store.staffReads.push(key);
         save(); return reply(200, item);
@@ -269,6 +280,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         const recipient = users.find(u => u.id === body.recipientId && u.role === 'resident' && u.communityIds.includes(community.id));
         if (!recipient || !validText(body.subject, 120) || !validText(body.message, 2000)) return reply(400, { error: 'Elige un vecino de esta comunidad y completa asunto y mensaje' });
         const item = { id: randomUUID(), communityId: community.id, recipientId: recipient.id, recipient: recipient.name, senderId: user.id, sender: user.name, subject: body.subject.trim(), message: body.message.trim(), createdAt: new Date().toISOString(), readAt: null };
+        item.emailNotification = simulatedEmail();
         store.neighborMessages.unshift(item); save(); return reply(201, item);
       }
       if (url.pathname.startsWith('/api/neighbor-messages/') && req.method === 'PATCH') {
@@ -298,6 +310,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         const ticket = store.tickets.find(t => t.id === url.pathname.split('/').pop() && t.communityId === community.id);
         if (!ticket) return reply(404, { error: 'Consulta no encontrada en esta comunidad' });
         if (!statuses.includes(body.status) || typeof body.reply !== 'string' || body.reply.length > 2000) return reply(400, { error: 'Estado o respuesta no válidos' });
+        notifyReply(ticket, body.reply.trim());
         ticket.status = body.status; ticket.reply = body.reply.trim();
         const key=readKey(user.id,'ticket',ticket.id);if(!store.staffReads.includes(key))store.staffReads.push(key);
         save(); return reply(200, ticket);

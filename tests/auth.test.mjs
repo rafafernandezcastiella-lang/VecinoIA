@@ -38,6 +38,38 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Campana del vecino: respuestas privadas, revisiones, correo simulado y lectura persistente', async () => {
+  const f=await fixture();
+  try {
+    let resident=await f.login('vecino.olivos');
+    const other=await f.login('vecino.olivos2'),plaza=await f.login('vecino.plaza'),admin=await f.login('administrador'),manager=await f.login('gestion');
+    const inbox=async s=>(await f.request('resident-inbox','GET',undefined,s)).body;
+    const ticket=(await f.request('tickets?community=olivos','POST',draft,resident)).body;
+    const service=(await f.request('service-requests?community=olivos','POST',{category:'Gas',subject:'Gas privado',message:'Ejemplo ficticio'},resident)).body;
+    const answer={status:'En revisión',reply:'Respuesta ficticia'};
+    await f.request(`tickets/${ticket.id}?community=olivos`,'PATCH',answer,admin);
+    await f.request(`service-requests/${service.id}?community=olivos`,'PATCH',answer,manager);
+    const message=(await f.request('neighbor-messages?community=olivos','POST',{recipientId:resident.user.id,subject:'Aviso personal',message:'Aviso de prueba'},admin)).body;
+    let received=await inbox(resident);assert.equal(received.unreadCount,3);assert.equal(received.simulatedEmailCount,3);
+    assert.ok(received.items.every(i=>i.email.mode==='simulation'&&i.email.sentCount===0));
+    assert.equal((await inbox(other)).items.length,0);assert.equal((await inbox(plaza)).items.length,0);
+    assert.equal((await f.request('resident-inbox','GET',undefined,admin)).status,403);
+    const item=received.items.find(i=>i.kind==='ticket');
+    assert.equal((await f.request('resident-inbox/read','POST',item,other)).status,404);
+    assert.equal((await f.request('resident-inbox/read','POST',item,resident,{'X-CSRF-Token':'wrong'})).status,403);
+    assert.equal((await f.request('resident-inbox/read','POST',item,resident)).body.unreadCount,2);
+    await f.request(`tickets/${ticket.id}?community=olivos`,'PATCH',{...answer,status:'Resuelta'},admin);
+    assert.equal((await inbox(resident)).unreadCount,2);
+    await f.request(`tickets/${ticket.id}?community=olivos`,'PATCH',{...answer,reply:'Respuesta corregida'},admin);
+    assert.equal((await inbox(resident)).unreadCount,3);
+    assert.equal((await f.request('resident-inbox/read','POST',item,resident)).status,404);
+    await f.request(`neighbor-messages/${message.id}?community=olivos`,'PATCH',{action:'read'},resident);
+    received=await inbox(resident);assert.equal(received.unreadCount,2);
+    for(const i of received.items)assert.equal((await f.request('resident-inbox/read','POST',i,resident)).status,200);
+    await f.restart();resident=await f.login('vecino.olivos');assert.equal((await inbox(resident)).unreadCount,0);
+  } finally {await f.close();}
+});
+
 test('Campana por usuario: comunidades, canal privado, simulación de correo y lectura persistente', async () => {
   const f=await fixture();
   try {

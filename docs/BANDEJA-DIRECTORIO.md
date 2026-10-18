@@ -29,3 +29,9 @@ Se oculta todo el bloque del selector de comunidades, incluida su etiqueta. La c
 ## Validación
 
 Veintinueve pruebas automatizadas aprobadas. Nuevas pruebas: recuento por usuario y comunidad, separación del canal privado de servicios, CSRF de lectura, lectura persistente y simulación de correo, validación del directorio, vinculación y privacidad, modificación y persistencia sin crear cuentas. Edge: campana se actualiza al enviar consulta, baja al abrir, gestor recibe servicios que administrador no ve, altas/ediciones del directorio, recarga y cambio de comunidad, móvil a 390 px sin desbordamiento ni errores JavaScript. Se prueba con datos temporales sin crear consultas o contactos de ensayo en la web pública.
+
+## Campana del vecino — 18 de octubre de 2026
+
+La campana abre Tus respuestas y avisos: respuestas de Administración a consultas comunitarias, respuestas de Gestión a servicios privados y avisos particulares dirigidos al usuario. Ver respuesta/Ver aviso registra lectura persistente y abre el contenido original. Una respuesta modificada vuelve a estar sin leer; guardar solo el estado o la misma respuesta no duplica avisos. Las respuestas previas también aparecen, sin atribuirles un correo que no se registró. Las consultas eliminadas dejan de contribuir al recuento.
+
+Las nuevas respuestas y avisos particulares registran correo simulado con cero envíos. No hay transporte de correo real. Actualización cada treinta segundos y al volver a la pestaña, sin borrar formularios. La lectura desde Avisos particulares actualiza también la campana. Un identificador de revisión evita marcar leída una respuesta que acaba de cambiar. La API exige rol de vecino, destinatario autorizado y CSRF para lectura.
