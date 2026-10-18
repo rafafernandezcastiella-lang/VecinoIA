@@ -184,3 +184,7 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 028 — Acceso sin nombre de comunidad
 
 17 de octubre de 2026. El usuario muestra la pantalla previa a identificarse y solicita que no aparezca ninguna comunidad. Se retira la leyenda «Residencial Los Olivos · Comunidad ficticia» de esa pantalla y se sustituyen por etiquetas genéricas los nombres de comunidades de las cuentas de prueba. No se cambian usuarios ni contraseñas. El nombre y la tarjeta de la comunidad autorizada siguen mostrándose después de entrar al portal. Se comprueba el acceso y la presentación adaptable.
+
+## 029 — Quitar anuncios de la vista del vecino
+
+18 de octubre de 2026. El usuario solicita un texto «quitar anuncio» al final del propio anuncio para limpiar su página. Se añade en tarjetas y banner urgente para residentes. La acción oculta el anuncio solo para el vecino autenticado y persiste, sin borrar la publicación compartida ni afectar a otros vecinos o administración. Se actualiza contador y estado vacío, conservando formularios sin enviar y protegiendo de respuestas periódicas antiguas. Veintisiete pruebas automatizadas pasan y se comprueba la interacción, persistencia, privacidad, móvil y conservación de un borrador en Edge. Las comprobaciones usan datos temporales y no ocultan anuncios del usuario en la web pública.

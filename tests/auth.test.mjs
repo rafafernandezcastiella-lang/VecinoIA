@@ -38,6 +38,31 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Quitar anuncio es individual, persistente e idempotente y no elimina la publicación', async () => {
+  const f=await fixture();
+  try {
+    let resident=await f.login('vecino.olivos');const other=await f.login('vecino.olivos2'),admin=await f.login('admin.olivos');
+    const state=async session=>(await f.request('state?community=olivos','GET',undefined,session)).body;
+    const initial=await state(resident),id=initial.announcements[0].id,path=`announcements/${id}?community=olivos`;
+    assert.equal((await f.request(path,'PATCH',{action:'dismiss'},admin)).status,403);
+    assert.equal((await f.request(path,'PATCH',{action:'dismiss'},resident,{'X-CSRF-Token':'incorrecto'})).status,403);
+    assert.equal((await f.request(`announcements/${id}?community=plaza`,'PATCH',{action:'dismiss'},resident)).status,403);
+    assert.equal((await f.request(path,'PATCH',{action:'dismiss',residentId:other.user.id},resident)).status,200);
+    assert.ok(!(await state(resident)).announcements.some(a=>a.id===id));
+    assert.ok((await state(other)).announcements.some(a=>a.id===id));assert.ok((await state(admin)).announcements.some(a=>a.id===id));
+    assert.equal((await f.request(path,'PATCH',{action:'dismiss'},resident)).status,200);
+    await f.request(path,'PATCH',{action:'edit',title:'Título revisado',body:'Aviso revisado por administración'},admin);
+    assert.ok(!(await state(resident)).announcements.some(a=>a.id===id));
+    const urgent=(await f.request('announcements?community=olivos','POST',{title:'Urgencia ficticia',body:'Aviso urgente de prueba',urgency:'urgent'},admin)).body;
+    assert.equal((await f.request(`announcements/${urgent.id}?community=olivos`,'PATCH',{action:'dismiss'},resident)).status,200);
+    assert.ok(!(await state(resident)).announcements.some(a=>a.id===urgent.id));
+    assert.equal((await state(admin)).announcements.find(a=>a.id===urgent.id).active,true);
+    await f.restart();resident=await f.login('vecino.olivos');
+    const after=await state(resident);assert.ok(!after.announcements.some(a=>a.id===id||a.id===urgent.id));assert.equal(after.documents.length,initial.documents.length);
+    assert.equal((await f.request('announcements/inexistente?community=olivos','PATCH',{action:'dismiss'},resident)).status,404);
+  }finally{await f.close();}
+});
+
 test('Avisos particulares de administración: destinatario, comunidad, lectura y persistencia', async () => {
   const f=await fixture();
   try {

@@ -8,6 +8,7 @@ let requestedDocument = '';
 let privateRequests = [], privateCategory = 'Luz', privateFilter = 'Todas';
 let adviceFilter = 'Todas', editingAdvice = '';
 let adminFilter = 'Todas';
+let stateVersion = 0;
 const communityStatusLabel = status => ({ Pendiente: 'Pendiente', 'En revisión': 'En curso', Resuelta: 'Terminada' }[status] || status);
 const privateCategories = ['Luz', 'Gas', 'Seguros', 'Mantenimiento', 'Otras consultas'];
 const incomingLink = new URLSearchParams(location.search);
@@ -68,18 +69,20 @@ async function load() {
   catch (error) { loading = false; $('#content').innerHTML = '<div class="empty">No se pudo cargar la comunidad. <button class="btn" data-action="retry">Reintentar</button></div>'; notice(error.message); }
 }
 const heading = (title, description) => `<div class="heading"><h1>${title}</h1><p class="lead">${description}</p></div>`;
-const announcement = a => `<article class="card ${a.urgency === 'urgent' ? 'urgent-card' : ''}"><span class="tag">${a.urgency === 'urgent' ? (a.active === false ? 'Urgente · Finalizado' : 'Aviso urgente') : 'Aviso ordinario'}</span><div class="meta">${escape(a.category)} · ${date(a.date)}</div><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p></article>`;
+const dismissAnnouncementControl = a => role === 'resident' ? `<form class="dismiss-announcement-form" data-id="${escape(a.id)}"><button class="announcement-dismiss" type="submit">quitar anuncio</button></form>` : '';
+const announcement = a => `<article class="card ${a.urgency === 'urgent' ? 'urgent-card' : ''}"><span class="tag">${a.urgency === 'urgent' ? (a.active === false ? 'Urgente · Finalizado' : 'Aviso urgente') : 'Aviso ordinario'}</span><div class="meta">${escape(a.category)} · ${date(a.date)}</div><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p>${dismissAnnouncementControl(a)}</article>`;
+function announcementList() { return state.announcements.length ? state.announcements.map(announcement).join('') : '<div class="empty">No tienes anuncios pendientes en esta comunidad.</div>'; }
 function urgentBanners() {
   const urgent = state.announcements.filter(a => a.urgency === 'urgent' && a.active !== false);
-  return `<section id="urgent-notices" class="urgent-announcements" aria-label="Avisos urgentes de tu comunidad" ${urgent.length ? '' : 'hidden'}>${urgent.map(a => `<article class="urgent-banner"><div class="urgent-label"><span class="urgent-dot" aria-hidden="true"></span>AVISO URGENTE · ${date(a.date)}</div><h2>${escape(a.title)}</h2><p class="announcement-body">${escape(a.body)}</p><small>Comunicado por la administración de ${escape(state.name)}</small></article>`).join('')}</section>`;
+  return `<section id="urgent-notices" class="urgent-announcements" aria-label="Avisos urgentes de tu comunidad" ${urgent.length ? '' : 'hidden'}>${urgent.map(a => `<article class="urgent-banner"><div class="urgent-label"><span class="urgent-dot" aria-hidden="true"></span>AVISO URGENTE · ${date(a.date)}</div><h2>${escape(a.title)}</h2><p class="announcement-body">${escape(a.body)}</p><small>Comunicado por la administración de ${escape(state.name)}</small>${dismissAnnouncementControl(a)}</article>`).join('')}</section>`;
 }
 function homeContactCard() {
   return role === 'resident' ? `<div class="card"><h3>¿Necesitas hablar con el administrador?</h3><p>Envía tu consulta y sigue la respuesta desde aquí.</p><br><button class="btn secondary" data-page="tickets">Crear una consulta</button></div><div class="card"><h3>Avisos particulares del administrador</h3><p>Consulta los mensajes que la administración te ha dirigido de forma individual.</p><button class="btn secondary" data-page="messages">Ver mis avisos particulares</button></div>` : `<div class="card"><h3>Contacto con los vecinos</h3><p>Elige un vecino de esta comunidad y envíale un aviso particular a su portal.</p><br><button class="btn secondary" data-page="neighborContact">Contactar con un vecino</button></div>`;
 }
 function home() {
   return `<div class="welcome"><div class="community-plaque"><span class="plaque-icon" aria-hidden="true">⌂</span><div><small>BIENVENIDO A CASA</small><strong>${escape(state.name)}</strong><span>${state.homes} viviendas · Comunidad de demostración</span></div></div>${heading('Tu comunidad, más cerca.', escape(state.subtitle))}<section class="hero"><div><div class="eyebrow">MENOS ESPERAS, MÁS RESPUESTAS</div><h2>Una duda menos.<br>Un día más sencillo.</h2><p>Consulta la información de tu comunidad y encuentra respuestas con su documento de origen.</p><div class="hero-actions"><button class="btn" data-page="assistant">Preguntar al asistente ↗</button>${role === 'resident' ? '<button class="btn photo-button" data-page="tickets">Hablar con el administrador</button>' : ''}</div></div></section></div>
-    <div class="stats"><div class="stat"><strong>${state.announcements.length}</strong><span>Avisos de la comunidad</span></div><div class="stat"><strong>${state.documents.length}</strong><span>Documentos disponibles</span></div><div class="stat"><strong>${state.tickets.filter(t => t.status !== 'Resuelta').length}</strong><span>Consultas abiertas</span></div></div>
-    <div class="columns"><section><div class="section-head"><h2>Lo que pasa en tu comunidad</h2></div>${state.announcements.map(announcement).join('')}</section><section><div class="card"><span class="tag">PRÓXIMA REUNIÓN</span><div class="meeting-date">${date(state.meeting.date)}</div><h3>${escape(state.meeting.title)}</h3><p>${escape(state.meeting.time)} h · ${escape(state.meeting.place)}</p><p>Consulta la convocatoria en los documentos de tu comunidad.</p><br><button class="btn secondary" data-page="documents">Ver documentación</button></div>${homeContactCard()}</section></div>`;
+    <div class="stats"><div class="stat"><strong id="home-announcement-count">${state.announcements.length}</strong><span>Avisos de la comunidad</span></div><div class="stat"><strong>${state.documents.length}</strong><span>Documentos disponibles</span></div><div class="stat"><strong>${state.tickets.filter(t => t.status !== 'Resuelta').length}</strong><span>Consultas abiertas</span></div></div>
+    <div class="columns"><section><div class="section-head"><h2>Lo que pasa en tu comunidad</h2></div><div id="home-announcements-list">${announcementList()}</div></section><section><div class="card"><span class="tag">PRÓXIMA REUNIÓN</span><div class="meeting-date">${date(state.meeting.date)}</div><h3>${escape(state.meeting.title)}</h3><p>${escape(state.meeting.time)} h · ${escape(state.meeting.place)}</p><p>Consulta la convocatoria en los documentos de tu comunidad.</p><br><button class="btn secondary" data-page="documents">Ver documentación</button></div>${homeContactCard()}</section></div>`;
 }
 function neighborInboxNotice() {
   const count = role === 'resident' ? (state.neighborMessages || []).filter(m => !m.readAt).length : 0;
@@ -196,11 +199,11 @@ function navigate(next) { if (loading) return; page = next; render(); $('#conten
 let refreshingUrgent = false;
 async function refreshUrgentAnnouncements() {
   if (!user || role !== 'resident' || loading || refreshingUrgent || document.visibilityState !== 'visible') return;
-  const target = communityId, userId = user.id;
+  const target = communityId, userId = user.id, version = stateVersion;
   refreshingUrgent = true;
   try {
     const next = await api('state', 'GET', undefined, target);
-    if (user?.id !== userId || communityId !== target || !state) return;
+    if (user?.id !== userId || communityId !== target || !state || loading || stateVersion !== version) return;
     state.announcements = next.announcements;
     state.neighborMessages = next.neighborMessages;
     const area = $('#urgent-notices');
@@ -262,11 +265,17 @@ document.addEventListener('submit', async event => {
   if (form.id === 'ask-form') { await ask(body.question.trim()); return; }
   if (loading) return;
   if (form.classList.contains('delete-announcement-form') && !window.confirm(`¿Eliminar el aviso «${form.dataset.title}» de esta comunidad? Dejará de estar disponible para sus vecinos.`)) return;
+  stateVersion++;
   const button = form.querySelector('button[type="submit"]');
   const target = communityId; loading = true; button.disabled = true; $('#community').disabled = true;
   try {
     let savedDocument, successMessage = 'Guardado correctamente';
-    if (form.id === 'clear-completed-form') {
+    const dismissingAnnouncement = form.classList.contains('dismiss-announcement-form');
+    if (dismissingAnnouncement) {
+      await api(`announcements/${form.dataset.id}`, 'PATCH', { action: 'dismiss' }, target);
+      successMessage = 'Anuncio quitado de tu página';
+    }
+    else if (form.id === 'clear-completed-form') {
       const result = await api('tickets/clear-completed', 'POST', {}, target);
       successMessage = `${result.removed} consultas completadas eliminadas`;
     }
@@ -303,7 +312,12 @@ document.addEventListener('submit', async event => {
     }
     else if (form.classList.contains('reply-form')) await api(`tickets/${form.dataset.id}`, 'PATCH', body, target);
     const [next, requests] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests')]);
-    state = next; privateRequests = requests; render();
+    state = next; privateRequests = requests;
+    if (dismissingAnnouncement) {
+      if ($('#urgent-notices')) $('#urgent-notices').outerHTML = urgentBanners();
+      if ($('#home-announcements-list')) $('#home-announcements-list').innerHTML = announcementList();
+      if ($('#home-announcement-count')) $('#home-announcement-count').textContent = state.announcements.length;
+    } else render();
     notice(savedDocument ? (savedDocument.processingStatus === 'error' ? 'Archivo guardado con error de procesamiento. Revisa el aviso.' : 'Documento procesado y guardado como borrador. Revísalo antes de publicar.') : successMessage);
     if (savedDocument) document.getElementById(`managed-${savedDocument.id}`)?.scrollIntoView({ block: 'center', behavior: 'auto' });
   } catch (error) { notice(error.message); }

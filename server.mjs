@@ -26,6 +26,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
   store.serviceRequests ||= [];
   store.neighborMessages ||= [];
   store.announcementDeletions ||= [];
+  store.announcementDismissals ||= [];
   store.advice ||= seedAdvice(communities);
   store.documents ||= communities.flatMap(c => c.documents.map(d => ({ ...d, communityId: c.id, status: 'published', processingStatus: 'ready', origin: 'demo', createdAt: '2026-10-13T00:00:00Z' })));
   const uploadsDir = join(dirname(dataFile), 'uploads');
@@ -123,7 +124,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         documents: publishedDocs(community.id).map(documentView),
         faqs: undefined,
         ...(user.role !== 'resident' ? { managedDocuments: store.documents.filter(d => d.communityId === community.id).map(documentView) } : {}),
-        announcements: communityAnnouncements(community).map(a => {
+        announcements: communityAnnouncements(community).filter(a => user.role !== 'resident' || !store.announcementDismissals.some(d => d.communityId === community.id && d.announcementId === a.id && d.residentId === user.id)).map(a => {
           const { emailNotification, ...visible } = a;
           return user.role === 'resident' ? visible : a;
         }),
@@ -301,9 +302,17 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         store.announcements.unshift(announcement); save(); return reply(201, announcement);
       }
       if (url.pathname.startsWith('/api/announcements/') && req.method === 'PATCH') {
-        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede gestionar avisos' });
         const item = communityAnnouncements(community).find(a => a.id === url.pathname.split('/').pop());
         if (!item) return reply(404, { error: 'Aviso no encontrado en esta comunidad' });
+        if (body.action === 'dismiss') {
+          if (user.role !== 'resident') return reply(403, { error: 'Solo los vecinos pueden quitar anuncios de su propia página' });
+          if (!store.announcementDismissals.some(d => d.communityId === community.id && d.announcementId === item.id && d.residentId === user.id)) {
+            store.announcementDismissals.push({ communityId: community.id, announcementId: item.id, residentId: user.id, dismissedAt: new Date().toISOString() });
+            save();
+          }
+          return reply(200, { dismissed: true });
+        }
+        if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede gestionar avisos' });
         if (['edit', 'delete'].includes(body.action)) {
           if (item.urgency === 'urgent') return reply(400, { error: 'Estas acciones solo se aplican a avisos ordinarios' });
           if (body.action === 'edit') {
