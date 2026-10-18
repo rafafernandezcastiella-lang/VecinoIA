@@ -126,3 +126,9 @@ En Edge, administrador no ve tarjeta ni botón de hablar con administración; re
 Veintisiete pruebas aprobadas. La nueva prueba comprueba permisos, CSRF, alcance individual aunque el cliente intente indicar otro usuario, acceso a comunidad, repetición idempotente, ocultación de ordinarios y urgentes, preservación del aviso para otro vecino y administración, persistencia tras reinicio y ausencia de alteraciones documentales. La edición del mismo anuncio mantiene la preferencia de ocultación.
 
 Edge verifica el enlace «quitar anuncio», desaparición y contador, recarga, otro vecino sin cambios, ausencia de esa acción en administración, retirada individual del banner urgente manteniendo un asunto sin enviar, estado vacío cuando se quitan todos y vista móvil a 390 px sin desbordamiento ni errores JavaScript. Capturas `.preview/dismiss-before.png`, `.preview/dismiss-empty-mobile.png` y `.preview/dismiss-control-mobile.png`. Los anuncios de la web pública no se usan para probar ni se ocultan.
+
+## Campana y directorio — 18 de octubre
+
+Veintinueve pruebas aprobadas. Se verifica inbox por usuario, rol y comunidad, aislamiento de servicios particulares, simulación de notificaciones solo para personal autorizado, lectura con CSRF y persistencia; directorio con datos válidos, vinculación restringida, privacidad para residentes y persistencia de edición/alta sin crear cuentas.
+
+En Edge se comprueba selector oculto al vecino, campana que detecta consulta nueva sin recargar, lectura que disminuye el recuento del administrador, gestor que recibe la particular que no ve el administrador, alta/edición de contactos, recarga, otra comunidad sin esos contactos y móvil sin desbordamiento ni errores. Capturas `.preview/staff-inbox-unread.png`, `.preview/resident-directory.png` y `.preview/resident-directory-mobile.png`. Datos temporales y cero correos reales.

@@ -9,6 +9,8 @@ let privateRequests = [], privateCategory = 'Luz', privateFilter = 'Todas';
 let adviceFilter = 'Todas', editingAdvice = '';
 let adminFilter = 'Todas';
 let stateVersion = 0;
+let staffInboxData = { items: [], unreadCount: 0, simulatedEmailCount: 0 }, editingResident = '';
+let staffInboxFilter = 'unread';
 const communityStatusLabel = status => ({ Pendiente: 'Pendiente', 'En revisión': 'En curso', Resuelta: 'Terminada' }[status] || status);
 const privateCategories = ['Luz', 'Gas', 'Seguros', 'Mantenimiento', 'Otras consultas'];
 const incomingLink = new URLSearchParams(location.search);
@@ -27,6 +29,7 @@ async function api(path, method = 'GET', body, id = communityId) {
   return data;
 }
 function showLogin() {
+  staffInboxData = { items: [], unreadCount: 0, simulatedEmailCount: 0 }; editingResident = ''; $('#staff-inbox-slot').replaceChildren();
   adminFilter = 'Todas';
   adviceFilter = 'Todas'; editingAdvice = '';
   privateRequests = []; privateCategory = 'Luz'; privateFilter = 'Todas';
@@ -49,6 +52,7 @@ async function enterPortal(session) {
   $('#community').innerHTML = list.map(c => `<option value="${escape(c.id)}">${escape(c.name)}</option>`).join('');
   $('#community').value = communityId;
   $('#community').disabled = list.length === 1;
+  $('.community-switch').hidden = role === 'resident';
   $('#user-name').textContent = user.name; $('#user-role').textContent = roleNames[role];
   $('#session-role').textContent = roleNames[role]; $('#user-avatar').textContent = user.name.slice(0, 1);
   $('#login-screen').hidden = true; $('.layout').hidden = false;
@@ -63,8 +67,8 @@ async function load() {
   loading = true;
   $('#content').innerHTML = '<p>Cargando tu comunidad…</p>';
   try {
-    const [next, requests] = await Promise.all([api('state'), role === 'admin' ? Promise.resolve([]) : api('service-requests')]);
-    state = next; privateRequests = requests; loading = false; render();
+    const [next, requests, inbox] = await Promise.all([api('state'), role === 'admin' ? Promise.resolve([]) : api('service-requests'), role === 'resident' ? Promise.resolve(null) : api('staff-inbox')]);
+    state = next; privateRequests = requests; if(inbox)staffInboxData=inbox; loading = false; render();
   }
   catch (error) { loading = false; $('#content').innerHTML = '<div class="empty">No se pudo cargar la comunidad. <button class="btn" data-action="retry">Reintentar</button></div>'; notice(error.message); }
 }
@@ -99,6 +103,36 @@ function neighborContact() {
 function messages() {
   return heading('Tus avisos particulares.', 'Comunicaciones que la administración ha dirigido únicamente a tu usuario.') + `<div class="note">Estos avisos no se publican en el tablón de la comunidad. Puedes registrar su lectura desde aquí.</div><div id="neighbor-message-list">${neighborMessageCards(false)}</div>`;
 }
+function staffBell() {
+  return role === 'resident' ? '' : `<button class="btn secondary inbox-bell" data-page="staffMessages" aria-label="${staffInboxData.unreadCount} mensajes sin leer"><span aria-hidden="true">🔔</span><span>Mensajes</span><span class="unread-badge ${staffInboxData.unreadCount ? 'has-unread' : ''}" aria-live="polite">${staffInboxData.unreadCount}</span></button>`;
+}
+function staffInboxCards() {
+  const items=staffInboxData.items.filter(i=>staffInboxFilter==='all'||!i.read);
+  const labels={ticket:'Consulta comunitaria',service:'Consulta particular de servicios',document:'Solicitud de documento'};
+  return items.length?items.map(i=>`<article class="card"><span class="tag">${i.read?'Leído':'Sin leer'}</span><div class="meta">${labels[i.kind]} · ${escape(i.communityName)} · ${i.createdAt?date(i.createdAt):'Fecha sin registrar'}</div><h3>${escape(i.subject)}</h3><p>${escape(i.resident)}</p><button class="btn secondary" data-open-communication="${escape(i.id)}" data-kind="${i.kind}">Ver mensaje</button></article>`).join(''):'<div class="empty">No hay mensajes con este filtro.</div>';
+}
+function staffMessages() {
+  return heading('Bandeja de mensajes.', 'Mensajes de los vecinos de todas tus comunidades autorizadas.')+`<div class="note">La campana cuenta los mensajes que tú todavía no has abierto. Las consultas particulares de servicios solo se muestran a Gestión VecinoIA.</div><div class="card inbox-filter"><label for="staff-inbox-filter">Mostrar</label><select id="staff-inbox-filter"><option value="unread" ${staffInboxFilter==='unread'?'selected':''}>Sin leer</option><option value="all" ${staffInboxFilter==='all'?'selected':''}>Todos</option></select><button class="btn secondary" data-action="retry">Actualizar bandeja</button></div><div class="email-simulation"><strong>Aviso por correo: simulación de la demo</strong><p>${staffInboxData.simulatedEmailCount} notificaciones de correo registradas para tu usuario. No se han enviado correos reales.</p></div><div id="staff-inbox-list">${staffInboxCards()}</div>`;
+}
+async function openCommunication(id,kind) {
+  if(loading)return;const item=staffInboxData.items.find(i=>i.id===id&&i.kind===kind);if(!item)return;
+  loading=true;stateVersion++;$('#community').disabled=true;
+  try{await api('staff-inbox/read','POST',{id,kind});communityId=item.communityId;$('#community').value=communityId;adminFilter='Todas';privateFilter='Todas';page=kind==='service'?'serviceInbox':kind==='document'?'deliveries':'admin';await load();document.getElementById(`communication-${kind}-${id}`)?.scrollIntoView({block:'center'});}
+  catch(error){notice(error.message);}finally{loading=false;$('#community').disabled=$('#community').options.length<=1;}
+}
+let refreshingStaff=false;
+async function refreshStaffInbox() {
+  if(!user||role==='resident'||loading||refreshingStaff||document.visibilityState!=='visible')return;
+  const userId=user.id,version=stateVersion;refreshingStaff=true;
+  try{const inbox=await api('staff-inbox');if(user?.id!==userId||loading||version!==stateVersion)return;staffInboxData=inbox;$('#staff-inbox-slot').innerHTML=staffBell();if(page==='staffMessages'&&$('#staff-inbox-list'))$('#staff-inbox-list').innerHTML=staffInboxCards();}catch{}finally{refreshingStaff=false;}
+}
+setInterval(refreshStaffInbox,30000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshStaffInbox();});
+function directory() {
+  const contacts=state.residentDirectory||[],edit=contacts.find(r=>r.id===editingResident);
+  const field=(name,label,max,type='text')=>`<label>${label}<input name="${name}" type="${type}" maxlength="${max}" required value="${escape(edit?.[name]||'')}"></label>`;
+  return heading('Directorio de vecinos.', 'Datos de contacto de la comunidad seleccionada, accesibles solo para administración y gestión.')+`<div class="note">Para el concurso introduce únicamente datos ficticios. Guardar un contacto no crea una cuenta de acceso. Puedes vincularlo con una cuenta de vecino ya existente.</div><section class="card"><h2>${edit?'Editar contacto':'Añadir vecino'}</h2><form id="resident-directory-form" class="form" data-id="${escape(edit?.id||'')}"><div class="form-row">${field('floor','Piso',20)}${field('unit','Letra',20)}</div><div class="form-row">${field('firstName','Nombre',60)}${field('lastName','Apellidos',100)}</div><div class="form-row">${field('email','Correo electrónico',254,'email')}${field('phone','Teléfono',25,'tel')}</div><label>Cuenta VecinoIA vinculada (opcional)<select name="userId"><option value="">Sin cuenta vinculada</option>${(state.residents||[]).map(r=>`<option value="${escape(r.id)}" ${edit?.userId===r.id?'selected':''}>${escape(r.name)}</option>`).join('')}</select></label><button class="btn" type="submit">Guardar contacto</button>${edit?'<button class="btn secondary" type="button" data-action="cancel-resident-edit">Cancelar edición</button>':''}</form></section><section class="card"><h2>Vecinos de ${escape(state.name)} (${contacts.length})</h2>${contacts.length?`<div class="directory-table"><table><thead><tr><th>Piso</th><th>Letra</th><th>Nombre y apellidos</th><th>Correo</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody>${contacts.map(r=>`<tr><td>${escape(r.floor)}</td><td>${escape(r.unit)}</td><td>${escape(r.firstName)} ${escape(r.lastName)}</td><td>${escape(r.email)}</td><td>${escape(r.phone)}</td><td><button class="btn secondary" data-edit-resident="${escape(r.id)}">Editar</button></td></tr>`).join('')}</tbody></table></div>`:'<p>No hay contactos en esta comunidad.</p>'}</section>`;
+}
 function assistant() {
   const configured = state.assistant?.configured;
   const mode = configured ? 'Modo IA configurado para las fuentes publicadas de tu comunidad. La pregunta y los fragmentos documentales se procesan mediante OpenAI. Si no hay soporte suficiente, puedes trasladar la pregunta al administrador.' : 'Modo búsqueda documental: la conexión de IA está pendiente de activación. Puedes consultar preguntas frecuentes y fragmentos publicados, o trasladar tu pregunta al administrador.';
@@ -126,13 +160,13 @@ function deliveries() {
   return heading('Documentos que llegan al vecino.', 'Prepara el mensaje y confirma el envío después de realizarlo en tu correo o WhatsApp.') + `<div class="note">Los mensajes se abren en tu aplicación de correo o en WhatsApp. VecinoIA no los envía automáticamente ni confirma su entrega. Mientras el portal sea local, los enlaces solo funcionan en este ordenador.</div>` + (state.documentRequests.length ? state.documentRequests.map(item => {
     const message = deliveryMessage(item);
     const available = state.documents.some(d => d.id === item.documentId);
-    if (!available) return `<article class="card"><span class="tag">${escape(item.status)}</span><h3>${escape(item.documentTitle)}</h3><p>${escape(item.resident)} · ${escape(item.destination)}</p><p class="processing-error">Documento retirado o no publicado. Vuelve a publicarlo desde Gestionar documentos antes de preparar un envío.</p></article>`;
+    if (!available) return `<article class="card" id="communication-document-${escape(item.id)}"><span class="tag">${escape(item.status)}</span><h3>${escape(item.documentTitle)}</h3><p>${escape(item.resident)} · ${escape(item.destination)}</p><p class="processing-error">Documento retirado o no publicado. Vuelve a publicarlo desde Gestionar documentos antes de preparar un envío.</p></article>`;
     const link = item.channel === 'email' ? `mailto:${encodeURIComponent(item.destination)}?subject=${encodeURIComponent(`Documento solicitado: ${item.documentTitle}`)}&body=${encodeURIComponent(message)}` : `https://wa.me/${encodeURIComponent(item.destination.replace(/^\+/, ''))}?text=${encodeURIComponent(message)}`;
-    return `<article class="card"><span class="tag">${escape(item.status)}</span><div class="meta">${escape(item.resident)} · ${date(item.createdAt)}</div><h3>${escape(item.documentTitle)}</h3><p>${item.channel === 'email' ? 'Correo electrónico' : 'WhatsApp'} · ${escape(item.destination)}</p><details><summary>Ver mensaje preparado</summary><p>${escape(message)}</p></details><div class="document-actions"><a class="btn" href="${escape(link)}" ${item.channel === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : ''}>${item.channel === 'email' ? 'Abrir correo' : 'Abrir WhatsApp'} ↗</a><button class="btn secondary" data-copy-delivery="${escape(item.id)}">Copiar mensaje</button></div>${item.status === 'Pendiente' ? `<form class="delivery-confirm-form form" data-id="${escape(item.id)}"><label class="confirm-checkbox"><input type="checkbox" required>He realizado el envío fuera de VecinoIA</label><button class="btn secondary" type="submit">Registrar mi confirmación de envío</button></form>` : '<p>Confirmación registrada por el gestor. No acredita recepción del destinatario.</p>'}</article>`;
+    return `<article class="card" id="communication-document-${escape(item.id)}"><span class="tag">${escape(item.status)}</span><div class="meta">${escape(item.resident)} · ${date(item.createdAt)}</div><h3>${escape(item.documentTitle)}</h3><p>${item.channel === 'email' ? 'Correo electrónico' : 'WhatsApp'} · ${escape(item.destination)}</p><details><summary>Ver mensaje preparado</summary><p>${escape(message)}</p></details><div class="document-actions"><a class="btn" href="${escape(link)}" ${item.channel === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : ''}>${item.channel === 'email' ? 'Abrir correo' : 'Abrir WhatsApp'} ↗</a><button class="btn secondary" data-copy-delivery="${escape(item.id)}">Copiar mensaje</button></div>${item.status === 'Pendiente' ? `<form class="delivery-confirm-form form" data-id="${escape(item.id)}"><label class="confirm-checkbox"><input type="checkbox" required>He realizado el envío fuera de VecinoIA</label><button class="btn secondary" type="submit">Registrar mi confirmación de envío</button></form>` : '<p>Confirmación registrada por el gestor. No acredita recepción del destinatario.</p>'}</article>`;
   }).join('') : '<div class="empty">Las solicitudes de documentos de esta comunidad aparecerán aquí.</div>');
 }
 function ticketCard(ticket, admin = false) {
-  return `<article class="card"><span class="tag status">${escape(communityStatusLabel(ticket.status))}</span><div class="meta">${escape(ticket.category)} · ${escape(ticket.priority)} · ${date(ticket.createdAt)}</div><h3>${escape(ticket.subject)}</h3><p class="ticket-message">${escape(ticket.message)}</p>${ticket.reply ? `<div class="reply"><strong>Respuesta del administrador</strong><p>${escape(ticket.reply)}</p></div>` : ''}${admin ? `<br><form class="form reply-form" data-id="${escape(ticket.id)}"><label>Estado<select name="status">${['Pendiente', 'En revisión', 'Resuelta'].map(status => `<option value="${status}" ${status === ticket.status ? 'selected' : ''}>${communityStatusLabel(status)}</option>`).join('')}</select></label><label>Respuesta<textarea name="reply" maxlength="2000">${escape(ticket.reply)}</textarea></label><button class="btn" type="submit">Guardar respuesta</button></form>` : ''}</article>`;
+  return `<article class="card" id="communication-ticket-${escape(ticket.id)}"><span class="tag status">${escape(communityStatusLabel(ticket.status))}</span><div class="meta">${escape(ticket.category)} · ${escape(ticket.priority)} · ${date(ticket.createdAt)}</div><h3>${escape(ticket.subject)}</h3><p class="ticket-message">${escape(ticket.message)}</p>${ticket.reply ? `<div class="reply"><strong>Respuesta del administrador</strong><p>${escape(ticket.reply)}</p></div>` : ''}${admin ? `<br><form class="form reply-form" data-id="${escape(ticket.id)}"><label>Estado<select name="status">${['Pendiente', 'En revisión', 'Resuelta'].map(status => `<option value="${status}" ${status === ticket.status ? 'selected' : ''}>${communityStatusLabel(status)}</option>`).join('')}</select></label><label>Respuesta<textarea name="reply" maxlength="2000">${escape(ticket.reply)}</textarea></label><button class="btn" type="submit">Guardar respuesta</button></form>` : ''}</article>`;
 }
 function tickets() {
   return heading('Consultas de tu comunidad.', 'Consulta sobre juntas, normas, recibos comunitarios o incidencias del edificio.') + `<div class="note">Las consultas están asociadas a tu usuario. Los vecinos ven las suyas y los administradores autorizados pueden atenderlas. Utiliza solo datos ficticios.</div><div class="columns"><section><h2>Nueva consulta</h2><form class="card form" id="ticket-form"><label>Asunto<input name="subject" required maxlength="120" value="${escape(pendingQuestion.slice(0, 120))}" placeholder="Por ejemplo, consulta sobre un recibo comunitario ficticio"></label><div class="form-row"><label>Categoría<select name="category">${['General', 'Incidencia', 'Recibos'].map(c => `<option ${c === serviceCategory ? 'selected' : ''}>${c}</option>`).join('')}</select></label><label>Prioridad<select name="priority"><option>Normal</option><option>Alta</option></select></label></div><label>Mensaje<textarea name="message" required maxlength="2000" placeholder="Utiliza únicamente información ficticia">${escape(pendingQuestion)}</textarea></label><button class="btn" type="submit">Enviar consulta</button></form></section><section><h2>Mis consultas (${state.tickets.length})</h2>${state.tickets.length ? state.tickets.map(t => ticketCard(t)).join('') : '<div class="empty">Aún no hay consultas. Al enviar una, podrás seguir su estado aquí.</div>'}</section></div>`;
@@ -142,7 +176,7 @@ function services() {
   return heading('Un espacio solo para tus consultas.', 'Habla con el equipo de Gestión VecinoIA sobre tus necesidades particulares.') + `<div class="note">Tus solicitudes son privadas entre tu usuario y Gestión VecinoIA. El administrador de la comunidad no puede verlas. Utiliza datos ficticios; no se realizan contratos ni comparaciones de ofertas reales.</div><div class="services">${items.map(([category, icon, title, description]) => `<article class="card"><div class="service-icon" aria-hidden="true">${icon}</div><h2>${title}</h2><p>${description}</p><button class="btn secondary" data-service="${category}">Consultar ${category.toLowerCase()} ↗</button></article>`).join('')}</div><div class="columns"><section><h2 class="outside-heading">Nueva consulta particular</h2><form class="card form" id="private-request-form"><label>Categoría<select name="category">${privateCategories.map(c => `<option ${c === privateCategory ? 'selected' : ''}>${c}</option>`).join('')}</select></label><label>Asunto<input name="subject" required maxlength="120" placeholder="Por ejemplo, revisar mi tarifa ficticia de gas"></label><label>Tu consulta<textarea name="message" required maxlength="2000" placeholder="Cuéntanos tu duda utilizando únicamente información ficticia"></textarea></label><p class="private-routing">La atenderá Gestión VecinoIA. Comunidad de referencia: ${escape(state.name)}.</p><button class="btn" type="submit">Enviar a Gestión VecinoIA</button></form></section><section><h2 class="outside-heading">Mis consultas particulares (${privateRequests.length})</h2>${privateRequests.length ? privateRequests.map(item => privateCard(item)).join('') : '<div class="empty">Tus solicitudes y las respuestas del equipo aparecerán aquí.</div>'}</section></div>`;
 }
 function privateCard(item, canReply = false) {
-  return `<article class="card"><span class="tag status">${escape(item.status)}</span><div class="meta">${escape(item.category)} · ${date(item.createdAt)}</div><h3>${escape(item.subject)}</h3><div class="meta">${escape(item.communityName)}${canReply ? ` · ${escape(item.resident)}` : ''}</div><p class="ticket-message">${escape(item.message)}</p>${item.reply ? `<div class="reply"><strong>Respuesta de Gestión VecinoIA</strong><p>${escape(item.reply)}</p></div>` : ''}${canReply ? `<form class="form private-reply-form" data-id="${escape(item.id)}" data-community="${escape(item.communityId)}"><label>Estado<select name="status">${['Pendiente', 'En revisión', 'Resuelta'].map(s => `<option ${s === item.status ? 'selected' : ''}>${s}</option>`).join('')}</select></label><label>Respuesta privada al vecino<textarea name="reply" maxlength="2000">${escape(item.reply)}</textarea></label><button class="btn" type="submit">Guardar respuesta privada</button></form>` : ''}</article>`;
+  return `<article class="card" id="communication-service-${escape(item.id)}"><span class="tag status">${escape(item.status)}</span><div class="meta">${escape(item.category)} · ${date(item.createdAt)}</div><h3>${escape(item.subject)}</h3><div class="meta">${escape(item.communityName)}${canReply ? ` · ${escape(item.resident)}` : ''}</div><p class="ticket-message">${escape(item.message)}</p>${item.reply ? `<div class="reply"><strong>Respuesta de Gestión VecinoIA</strong><p>${escape(item.reply)}</p></div>` : ''}${canReply ? `<form class="form private-reply-form" data-id="${escape(item.id)}" data-community="${escape(item.communityId)}"><label>Estado<select name="status">${['Pendiente', 'En revisión', 'Resuelta'].map(s => `<option ${s === item.status ? 'selected' : ''}>${s}</option>`).join('')}</select></label><label>Respuesta privada al vecino<textarea name="reply" maxlength="2000">${escape(item.reply)}</textarea></label><button class="btn" type="submit">Guardar respuesta privada</button></form>` : ''}</article>`;
 }
 function serviceInbox() {
   const filtered = privateFilter === 'Todas' ? privateRequests : privateRequests.filter(item => item.status === privateFilter);
@@ -187,12 +221,13 @@ function render() {
   $('#content').classList.toggle('home-page', page === 'home');
   $('#community-name').textContent = state.name;
   const basePages = role === 'resident' ? [...pages, ['messages', '✉', 'Avisos particulares']] : pages.filter(([id]) => id !== 'services');
-  const navigation = role !== 'resident' ? [...basePages, ['admin', '▦', 'Administración'], ['neighborContact', '✉', 'Contacto con los vecinos'], ['knowledge', '▤', 'Gestionar documentos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : []), ['deliveries', '↗', 'Envío de documentos']] : basePages;
-  if (['admin', 'deliveries', 'knowledge', 'neighborContact'].includes(page) && role === 'resident') page = 'home';
+  const navigation = role !== 'resident' ? [...basePages, ['admin', '▦', 'Administración'], ['staffMessages', '♧', 'Bandeja de mensajes'], ['directory', '▤', 'Directorio de vecinos'], ['neighborContact', '✉', 'Contacto con los vecinos'], ['knowledge', '▤', 'Gestionar documentos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : []), ['deliveries', '↗', 'Envío de documentos']] : basePages;
+  if (['admin', 'deliveries', 'knowledge', 'neighborContact', 'staffMessages', 'directory'].includes(page) && role === 'resident') page = 'home';
   if (page === 'messages' && role !== 'resident') page = 'home';
   if ((page === 'serviceInbox' && role !== 'manager') || (page === 'services' && role !== 'resident')) page = 'home';
   $('#nav').innerHTML = navigation.map(([id, icon, label]) => `<button data-page="${id}" class="${id === page ? 'active' : ''}" ${id === page ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span> &nbsp; ${label}</button>`).join('');
-  $('#content').innerHTML = urgentBanners() + neighborInboxNotice() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice, neighborContact, messages })[page]();
+  $('#staff-inbox-slot').innerHTML = staffBell();
+  $('#content').innerHTML = urgentBanners() + neighborInboxNotice() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice, neighborContact, messages, staffMessages, directory })[page]();
   document.title = `VecinoIA · ${state.name}`;
 }
 function navigate(next) { if (loading) return; page = next; render(); $('#content').focus(); }
@@ -239,6 +274,9 @@ document.addEventListener('click', event => {
     return;
   }
   if (!user) return;
+  if (button.dataset.openCommunication) { openCommunication(button.dataset.openCommunication, button.dataset.kind); return; }
+  if (button.dataset.editResident) { editingResident=button.dataset.editResident; render(); $('#resident-directory-form')?.scrollIntoView({block:'center'}); return; }
+  if (button.dataset.action === 'cancel-resident-edit') {editingResident='';render();return;}
   if (button.dataset.editAdvice) { editingAdvice = button.dataset.editAdvice; render(); $('#advice-editor')?.scrollIntoView({ block: 'center' }); }
   if (button.dataset.action === 'cancel-advice') { editingAdvice = ''; render(); }
   if (button.dataset.documentRequest) { requestedDocument = button.dataset.documentRequest; navigate('documents'); $('#document-request-form')?.scrollIntoView({ block: 'center', behavior: 'auto' }); }
@@ -288,6 +326,9 @@ document.addEventListener('submit', async event => {
     else if (form.classList.contains('document-status-form')) await api(`documents/${form.dataset.id}`, 'PATCH', { action: form.dataset.action, reviewed: body.reviewed === 'on' }, target);
     else if (form.id === 'advice-form') { await api(form.dataset.id ? `advice/${form.dataset.id}` : 'advice', form.dataset.id ? 'PATCH' : 'POST', { ...body, action: 'edit' }, target); editingAdvice = ''; }
     else if (form.classList.contains('advice-status-form')) { await api(`advice/${form.dataset.id}`, 'PATCH', { action: form.dataset.action, reviewed: body.reviewed === 'on' }, target); editingAdvice = ''; }
+    else if (form.id === 'resident-directory-form') {
+      await api(form.dataset.id ? `resident-directory/${form.dataset.id}` : 'resident-directory', form.dataset.id ? 'PATCH' : 'POST', body, target);editingResident='';successMessage='Contacto de vecino guardado';
+    }
     else if (form.id === 'neighbor-contact-form') {
       await api('neighbor-messages', 'POST', body, target); successMessage = 'Aviso particular enviado al portal del vecino';
     }
@@ -311,7 +352,8 @@ document.addEventListener('submit', async event => {
       successMessage = 'Aviso ordinario eliminado';
     }
     else if (form.classList.contains('reply-form')) await api(`tickets/${form.dataset.id}`, 'PATCH', body, target);
-    const [next, requests] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests')]);
+    const [next, requests, inbox] = await Promise.all([api('state', 'GET', undefined, target), role === 'admin' ? Promise.resolve([]) : api('service-requests'), role === 'resident' ? Promise.resolve(null) : api('staff-inbox')]);
+    if(inbox)staffInboxData=inbox;
     state = next; privateRequests = requests;
     if (dismissingAnnouncement) {
       if ($('#urgent-notices')) $('#urgent-notices').outerHTML = urgentBanners();
@@ -324,6 +366,7 @@ document.addEventListener('submit', async event => {
   finally { loading = false; button.disabled = false; $('#community').disabled = $('#community').options.length <= 1; if ($('#upload-progress')) $('#upload-progress').hidden = true; }
 });
 document.addEventListener('change', event => {
+  if(event.target.id==='staff-inbox-filter'){staffInboxFilter=event.target.value;render();}
   if (event.target.id === 'announcement-urgency') {
     $('#announcement-explanation').textContent = event.target.value === 'urgent' ? 'Aparecerá un banner destacado en el portal. Se registrará un correo simulado para los vecinos de esta comunidad; no se enviarán correos reales.' : 'Se publicará en los avisos de la comunidad, sin banner urgente ni notificación por correo.';
   }
@@ -337,7 +380,7 @@ document.addEventListener('change', event => {
     if (whatsapp) input.setAttribute('pattern', '[+]?[0-9]{8,15}'); else input.removeAttribute('pattern');
   }
 });
-$('#community').addEventListener('change', async event => { if (loading) { event.target.value = communityId; return; } communityId = event.target.value; adminFilter = 'Todas'; editingAdvice = ''; adviceFilter = 'Todas'; chat = []; pendingQuestion = ''; serviceCategory = 'General'; requestedDocument = ''; await load(); });
+$('#community').addEventListener('change', async event => { if (loading) { event.target.value = communityId; return; } communityId = event.target.value; editingResident = ''; adminFilter = 'Todas'; editingAdvice = ''; adviceFilter = 'Todas'; chat = []; pendingQuestion = ''; serviceCategory = 'General'; requestedDocument = ''; await load(); });
 showLogin();
 try {
   const response = await fetch('/api/session');

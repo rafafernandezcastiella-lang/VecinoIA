@@ -65,3 +65,12 @@
 .dismiss-announcement-form { margin-top: 18px; }
 .announcement-dismiss { padding: 5px 0; background: transparent; border: 0; text-decoration: underline; text-underline-offset: 3px; color: #005ca8; font-size: 13px; cursor: pointer; }
 .urgent-banner .announcement-dismiss { color: #692500; }
+.topbar { height: auto; min-height: 75px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; }
+.session-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
+.inbox-bell { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.unread-badge { min-width: 22px; padding: 3px 6px; border-radius: 20px; background: #e5edf5; color: #002d5a; font-weight: bold; }
+.unread-badge.has-unread { background: #ae2a15; color: white; }
+.directory-table { overflow-x: auto; max-width: 100%; }
+.directory-table table { border-collapse: collapse; min-width: 760px; width: 100%; font-size: 13px; }
+.directory-table th, .directory-table td { text-align: left; padding: 12px; border-bottom: 1px solid #d7e1eb; }
+.directory-table th { color: #002d5a; }

@@ -38,6 +38,55 @@ async function fixture(assistant = createAssistant({ apiKey: '' })) {
 }
 const draft = { subject: 'Recibo ficticio', message: 'Revisar importe de ejemplo', category: 'Recibos', priority: 'Normal' };
 
+test('Campana por usuario: comunidades, canal privado, simulación de correo y lectura persistente', async () => {
+  const f=await fixture();
+  try {
+    let admin=await f.login('administrador');const limited=await f.login('admin.olivos'),manager=await f.login('gestion'),resident=await f.login('vecino.olivos'),plaza=await f.login('vecino.plaza');
+    const ticket=(await f.request('tickets?community=olivos','POST',draft,resident)).body;
+    const service=(await f.request('service-requests?community=olivos','POST',{category:'Gas',subject:'Servicio privado ficticio',message:'Consulta particular ficticia'},resident)).body;
+    await f.request('tickets?community=plaza','POST',draft,plaza);
+    const inbox=async session=>(await f.request('staff-inbox','GET',undefined,session)).body;
+    assert.equal((await f.request('staff-inbox','GET',undefined,resident)).status,403);
+    assert.equal((await inbox(admin)).unreadCount,2);assert.equal((await inbox(limited)).unreadCount,1);assert.equal((await inbox(manager)).unreadCount,3);
+    assert.ok(!(await inbox(admin)).items.some(i=>i.kind==='service'));
+    assert.equal((await inbox(admin)).simulatedEmailCount,2);assert.equal((await inbox(manager)).simulatedEmailCount,3);
+    assert.equal((await f.request('staff-inbox/read','POST',{id:service.id,kind:'service'},admin)).status,404);
+    assert.equal((await f.request('staff-inbox/read','POST',{id:ticket.id,kind:'ticket'},admin,{'X-CSRF-Token':'incorrecto'})).status,403);
+    assert.equal((await f.request('staff-inbox/read','POST',{id:ticket.id,kind:'ticket'},admin)).body.unreadCount,1);
+    assert.equal((await inbox(manager)).unreadCount,3);assert.equal((await inbox(limited)).unreadCount,1);
+    const state=(await f.request('state?community=olivos','GET',undefined,resident)).body;
+    const documentRequest=(await f.request('document-requests?community=olivos','POST',{documentId:state.documents[0].id,channel:'email',destination:'demo@example.com'},resident)).body;
+    assert.equal((await inbox(admin)).unreadCount,2);assert.equal((await inbox(manager)).unreadCount,4);
+    assert.equal((await f.request(`document-requests/${documentRequest.id}?community=olivos`,'PATCH',{status:'Envío confirmado por gestor'},admin)).status,200);
+    assert.equal((await inbox(admin)).unreadCount,1);
+    await f.restart();admin=await f.login('administrador');assert.equal((await inbox(admin)).unreadCount,1);
+    const data=JSON.parse(readFileSync(join(f.dir,'demo.json'),'utf8'));assert.ok(data.staffEmailNotifications.every(n=>n.mode==='simulation'&&n.sentCount===0));
+  }finally{await f.close();}
+});
+
+test('Directorio de vecinos: validación, vinculación, privacidad y persistencia sin crear cuentas', async () => {
+  const f=await fixture();
+  try {
+    let admin=await f.login('admin.olivos');const resident=await f.login('vecino.olivos'),manager=await f.login('gestion');
+    const state=async(session=admin,c='olivos')=>(await f.request(`state?community=${c}`,'GET',undefined,session)).body;
+    const initial=await state();assert.equal(initial.residentDirectory.length,2);assert.equal((await state(resident)).residentDirectory,undefined);
+    const contact={floor:'Bajo',unit:'B',firstName:'Persona',lastName:'De Prueba',email:'persona@example.com',phone:'+34 000 000 000'};
+    assert.equal((await f.request('resident-directory?community=olivos','POST',contact,resident)).status,403);
+    assert.equal((await f.request('resident-directory?community=plaza','POST',contact,admin)).status,403);
+    assert.equal((await f.request('resident-directory?community=olivos','POST',{...contact,email:'mal'},admin)).status,400);
+    assert.equal((await f.request('resident-directory?community=olivos','POST',{...contact,phone:'abc'},admin)).status,400);
+    assert.equal((await f.request('resident-directory?community=olivos','POST',{...contact,userId:'neighbor-plaza'},admin)).status,400);
+    assert.equal((await f.request('resident-directory?community=olivos','POST',{...contact,userId:resident.user.id},admin)).status,400);
+    const created=await f.request('resident-directory?community=olivos','POST',contact,admin);assert.equal(created.status,201);assert.equal(created.body.userId,null);
+    assert.equal((await state()).residents.length,2);
+    const seed=initial.residentDirectory[0];const edit={...seed,lastName:'Ejemplo Actualizado'};
+    assert.equal((await f.request(`resident-directory/${seed.id}?community=olivos`,'PATCH',edit,admin)).status,200);
+    assert.ok((await state()).residents.some(r=>r.name.includes('Ejemplo Actualizado')));
+    const plaza=(await state(manager,'plaza')).residentDirectory[0];assert.equal((await f.request(`resident-directory/${plaza.id}?community=olivos`,'PATCH',contact,admin)).status,404);
+    await f.restart();admin=await f.login('admin.olivos');const after=await state();assert.equal(after.residentDirectory.length,3);assert.ok(after.residentDirectory.some(r=>r.id===created.body.id&&r.email===contact.email));
+  }finally{await f.close();}
+});
+
 test('Quitar anuncio es individual, persistente e idempotente y no elimina la publicación', async () => {
   const f=await fixture();
   try {

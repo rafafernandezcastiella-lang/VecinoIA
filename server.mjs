@@ -9,6 +9,7 @@ import { documentPDF } from './src/pdf.mjs';
 import { documentView, extractDocument, maxFileSize, supportedExtensions } from './src/documents.mjs';
 import { createAssistant } from './src/assistant.mjs';
 import { adviceKinds, adviceCategories, seedAdvice } from './src/advice.mjs';
+import { staffInbox, readKey, simulateStaffEmail, validateResidentContact } from './src/staff-inbox.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const categories = ['General', 'Incidencia', 'Recibos'];
@@ -25,6 +26,8 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
   store.documentRequests ||= [];
   store.serviceRequests ||= [];
   store.neighborMessages ||= [];
+  store.staffReads ||= [];
+  store.staffEmailNotifications ||= [];
   store.announcementDeletions ||= [];
   store.announcementDismissals ||= [];
   store.advice ||= seedAdvice(communities);
@@ -44,6 +47,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
     save();
   }
   const users = loadUsers(join(dirname(dataFile), 'users.json'));
+  store.residentDirectory ||= users.filter(u => u.role === 'resident').flatMap((u,i) => u.communityIds.map(communityId => ({ id: `contact-${communityId}-${u.id}`, communityId, userId:u.id, firstName:u.name.split(' · ')[0], lastName:'Ejemplo', floor:String(i+1), unit:'A', email:`vecino${i+1}.${communityId}@example.com`, phone:`+3400000000${i+1}` })));
   const sessions = new Map();
   const attempts = new Map();
   const sessionDuration = 8 * 60 * 60 * 1000;
@@ -108,6 +112,17 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         return reply(200, { ok: true });
       }
       if (url.pathname === '/api/communities' && req.method === 'GET') return reply(200, communities.filter(c => user.communityIds.includes(c.id)).map(({ id, name }) => ({ id, name })));
+      if (url.pathname === '/api/staff-inbox' && req.method === 'GET') {
+        if (!['admin','manager'].includes(user.role)) return reply(403,{error:'Bandeja exclusiva de administración y gestión'});
+        return reply(200,staffInbox(store,user,communities));
+      }
+      if (url.pathname === '/api/staff-inbox/read' && req.method === 'POST') {
+        if (!['admin','manager'].includes(user.role)) return reply(403,{error:'Bandeja exclusiva de administración y gestión'});
+        const item=staffInbox(store,user,communities).items.find(i=>i.id===body.id&&i.kind===body.kind);
+        if (!item) return reply(404,{error:'Comunicación no encontrada'});
+        const key=readKey(user.id,item.kind,item.id);if(!store.staffReads.includes(key)){store.staffReads.push(key);save();}
+        return reply(200,staffInbox(store,user,communities));
+      }
       if (url.pathname === '/api/service-requests' && req.method === 'GET') {
         if (!['resident', 'manager'].includes(user.role)) return reply(403, { error: 'Las consultas particulares se atienden exclusivamente desde Gestión VecinoIA' });
         return reply(200, store.serviceRequests.filter(item => user.communityIds.includes(item.communityId) && (user.role === 'manager' || item.residentId === user.id)).map(item => ({ ...item, communityName: communities.find(c => c.id === item.communityId)?.name || 'Comunidad' })));
@@ -120,7 +135,11 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         assistant: assistant.status,
         advice: store.advice.filter(a => a.communityId === community.id && (user.role !== 'resident' || a.status === 'published')),
         neighborMessages: store.neighborMessages.filter(m => m.communityId === community.id && (user.role !== 'resident' || m.recipientId === user.id)),
-        ...(user.role !== 'resident' ? { residents: users.filter(u => u.role === 'resident' && u.communityIds.includes(community.id)).map(({ id, name }) => ({ id, name })) } : {}),
+        ...(user.role !== 'resident' ? { residents: users.filter(u => u.role === 'resident' && u.communityIds.includes(community.id)).map(({ id, name }) => {
+          const contact=store.residentDirectory.find(r=>r.communityId===community.id&&r.userId===id);
+          return {id,name:contact?`${contact.firstName} ${contact.lastName} · ${contact.floor}${contact.unit}`:name};
+        }) } : {}),
+        ...(user.role !== 'resident' ? { residentDirectory:store.residentDirectory.filter(r=>r.communityId===community.id) } : {}),
         documents: publishedDocs(community.id).map(documentView),
         faqs: undefined,
         ...(user.role !== 'resident' ? { managedDocuments: store.documents.filter(d => d.communityId === community.id).map(documentView) } : {}),
@@ -181,14 +200,16 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         if (user.role !== 'resident') return reply(403, { error: 'Las consultas particulares se crean desde el perfil de vecino' });
         if (!validText(body.subject, 120) || !validText(body.message, 2000) || !serviceCategories.includes(body.category)) return reply(400, { error: 'Revisa el asunto, el mensaje y la categoría del servicio' });
         const item = { id: randomUUID(), communityId: community.id, residentId: user.id, resident: user.name, category: body.category, subject: body.subject.trim(), message: body.message.trim(), status: 'Pendiente', reply: '', createdAt: new Date().toISOString() };
-        store.serviceRequests.unshift(item); save(); return reply(201, item);
+        store.serviceRequests.unshift(item); simulateStaffEmail(store,users,'service',item); save(); return reply(201, item);
       }
       if (url.pathname.startsWith('/api/service-requests/') && req.method === 'PATCH') {
         if (user.role !== 'manager') return reply(403, { error: 'Solo Gestión VecinoIA puede responder consultas particulares' });
         const item = store.serviceRequests.find(r => r.id === url.pathname.split('/').pop() && r.communityId === community.id);
         if (!item) return reply(404, { error: 'Consulta particular no encontrada' });
         if (!statuses.includes(body.status) || typeof body.reply !== 'string' || body.reply.length > 2000) return reply(400, { error: 'Estado o respuesta no válidos' });
-        item.status = body.status; item.reply = body.reply.trim(); item.updatedAt = new Date().toISOString(); save(); return reply(200, item);
+        item.status = body.status; item.reply = body.reply.trim(); item.updatedAt = new Date().toISOString();
+        const key=readKey(user.id,'service',item.id);if(!store.staffReads.includes(key))store.staffReads.push(key);
+        save(); return reply(200, item);
       }
       if (url.pathname === '/api/document-requests' && req.method === 'POST') {
         const doc = publishedDocs(community.id).find(d => d.id === body.documentId);
@@ -198,7 +219,7 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         const phoneOK = typeof body.destination === 'string' && /^\+?[0-9]{8,15}$/.test(body.destination);
         if (!['email', 'whatsapp'].includes(body.channel) || (body.channel === 'email' ? !emailOK : !phoneOK)) return reply(400, { error: 'Indica un correo válido o un teléfono con prefijo internacional y entre 8 y 15 dígitos' });
         const item = { id: randomUUID(), communityId: community.id, documentId: doc.id, documentTitle: doc.title, residentId: user.id, resident: user.name, channel: body.channel, destination: body.destination, status: 'Pendiente', createdAt: new Date().toISOString() };
-        store.documentRequests.unshift(item); save(); return reply(201, item);
+        store.documentRequests.unshift(item); simulateStaffEmail(store,users,'document',item); save(); return reply(201, item);
       }
       if (url.pathname.startsWith('/api/document-requests/') && req.method === 'PATCH') {
         if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede actualizar solicitudes de documentos' });
@@ -206,7 +227,9 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
         if (!item) return reply(404, { error: 'Solicitud no encontrada' });
         if (!['Pendiente', 'Envío confirmado por gestor'].includes(body.status)) return reply(400, { error: 'Estado no válido' });
         if (body.status === 'Envío confirmado por gestor' && !publishedDocs(community.id).some(d => d.id === item.documentId)) return reply(409, { error: 'El documento está retirado. Publícalo antes de preparar un nuevo envío.' });
-        item.status = body.status; item.confirmedAt = body.status === 'Pendiente' ? null : new Date().toISOString(); save(); return reply(200, item);
+        item.status = body.status; item.confirmedAt = body.status === 'Pendiente' ? null : new Date().toISOString();
+        const key=readKey(user.id,'document',item.id);if(!store.staffReads.includes(key))store.staffReads.push(key);
+        save(); return reply(200, item);
       }
       if (url.pathname === '/api/ask' && req.method === 'POST') {
         if (!validText(body.question, 1000)) return reply(400, { error: 'Escribe una pregunta de hasta 1.000 caracteres' });
@@ -230,6 +253,16 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
           }
           return reply(200, answer);
         } finally { assistantActive.delete(user.id); }
+      }
+      if ((url.pathname === '/api/resident-directory' && req.method === 'POST') || (url.pathname.startsWith('/api/resident-directory/') && req.method === 'PATCH')) {
+        if (!['admin','manager'].includes(user.role)) return reply(403,{error:'Directorio exclusivo de administración y gestión'});
+        const current=req.method==='PATCH'?store.residentDirectory.find(r=>r.id===url.pathname.split('/').pop()&&r.communityId===community.id):null;
+        if(req.method==='PATCH'&&!current)return reply(404,{error:'Contacto no encontrado'});
+        if(req.method==='POST'&&store.residentDirectory.filter(r=>r.communityId===community.id).length>=500)return reply(409,{error:'Límite de 500 contactos por comunidad en esta demo'});
+        const parsed=validateResidentContact(body,users,community.id,store.residentDirectory,current?.id);
+        if(parsed.error)return reply(400,{error:parsed.error});
+        const item=current||{id:randomUUID(),communityId:community.id};Object.assign(item,parsed.value,{updatedAt:new Date().toISOString()});
+        if(!current)store.residentDirectory.push(item);save();return reply(current?200:201,item);
       }
       if (url.pathname === '/api/neighbor-messages' && req.method === 'POST') {
         if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede enviar avisos particulares' });
@@ -258,14 +291,16 @@ export function createApp({ dataFile = join(resolve(process.env.DATA_DIR || join
       if (url.pathname === '/api/tickets' && req.method === 'POST') {
         if (!validText(body.subject, 120) || !validText(body.message, 2000) || !categories.includes(body.category) || !['Normal', 'Alta'].includes(body.priority)) return reply(400, { error: 'Revisa el asunto, el mensaje, la categoría y la prioridad' });
         const ticket = { id: randomUUID(), communityId: community.id, subject: body.subject.trim(), message: body.message.trim(), category: body.category, priority: body.priority, status: 'Pendiente', reply: '', createdAt: new Date().toISOString(), residentId: user.id, resident: user.name };
-        store.tickets.unshift(ticket); save(); return reply(201, ticket);
+        store.tickets.unshift(ticket); if(user.role==='resident')simulateStaffEmail(store,users,'ticket',ticket); save(); return reply(201, ticket);
       }
       if (url.pathname.startsWith('/api/tickets/') && req.method === 'PATCH') {
         if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración puede responder consultas' });
         const ticket = store.tickets.find(t => t.id === url.pathname.split('/').pop() && t.communityId === community.id);
         if (!ticket) return reply(404, { error: 'Consulta no encontrada en esta comunidad' });
         if (!statuses.includes(body.status) || typeof body.reply !== 'string' || body.reply.length > 2000) return reply(400, { error: 'Estado o respuesta no válidos' });
-        ticket.status = body.status; ticket.reply = body.reply.trim(); save(); return reply(200, ticket);
+        ticket.status = body.status; ticket.reply = body.reply.trim();
+        const key=readKey(user.id,'ticket',ticket.id);if(!store.staffReads.includes(key))store.staffReads.push(key);
+        save(); return reply(200, ticket);
       }
       if (url.pathname === '/api/advice' && req.method === 'POST') {
         if (!['admin', 'manager'].includes(user.role)) return reply(403, { error: 'Solo administración y gestión pueden crear contenidos' });
