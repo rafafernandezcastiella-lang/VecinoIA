@@ -15,7 +15,6 @@ const communityStatusLabel = status => ({ Pendiente: 'Pendiente', 'En revisión'
 const privateCategories = ['Luz', 'Gas', 'Seguros', 'Mantenimiento', 'Otras consultas'];
 const incomingLink = new URLSearchParams(location.search);
 const roleNames = { resident: 'Vecino', admin: 'Administrador', manager: 'Gestión VecinoIA' };
-const pages = [['home', '⌂', 'Mi comunidad'], ['assistant', '✧', 'Asistente'], ['documents', '▤', 'Documentos'], ['tickets', '✉', 'Consultas comunidad'], ['advice', '✦', 'Consejos, ayudas y servicios'], ['services', '◇', 'Consultas particulares']];
 
 function notice(message) { $('#notice').textContent = message; $('#notice').classList.add('visible'); clearTimeout(notice.timer); notice.timer = setTimeout(() => $('#notice').classList.remove('visible'), 5500); }
 async function api(path, method = 'GET', body, id = communityId) {
@@ -231,18 +230,31 @@ function advice() {
     <div class="advice-grid">${items.length ? items.map(a => `<article class="card advice-card"><div><span class="tag">${escape(a.kind)}</span> ${staff ? `<span class="tag status">${labels[a.status]}</span>` : ''}</div><div class="meta">${escape(a.category)} · ${date(a.updated)}${a.demo ? ' · Ejemplo ficticio' : ''}</div><h2>${escape(a.title)}</h2><p class="advice-body">${escape(a.body)}</p>${role === 'resident' ? `<button class="btn secondary" data-service="${escape(a.category)}">Solicitar orientación privada ↗</button>` : `<div class="document-actions">${a.status !== 'published' ? `<button class="btn secondary" data-edit-advice="${escape(a.id)}">Editar contenido</button>` : ''}</div><form class="advice-status-form form" data-id="${escape(a.id)}" data-action="${a.status === 'published' ? 'withdraw' : 'publish'}">${a.status === 'published' ? '' : '<label class="confirm-checkbox"><input type="checkbox" name="reviewed" required>He revisado el contenido y autorizo publicarlo en esta comunidad</label>'}<button type="submit" class="btn secondary">${a.status === 'published' ? 'Retirar publicación' : 'Publicar contenido'}</button></form>`}</article>`).join('') : '<div class="empty">No hay contenidos en esta sección.</div>'}</div>
     ${staff ? `<section class="card" id="advice-editor"><h2>${edit ? 'Editar contenido' : 'Crear contenido'}</h2><p>Se guardará como borrador para ${escape(state.name)}. Revisa la información antes de publicarla.</p><form id="advice-form" class="form" data-id="${escape(edit?.id || '')}"><label>Sección<select name="kind">${options(['Consejos', 'Ayudas', 'Servicios'], edit?.kind)}</select></label><label>Tipo de consulta particular<select name="category">${options(privateCategories, edit?.category)}</select></label><label>Título<input name="title" maxlength="120" required value="${escape(edit?.title || '')}"></label><label>Contenido<textarea name="body" maxlength="4000" required>${escape(edit?.body || '')}</textarea></label><button class="btn" type="submit">Guardar borrador</button>${edit ? '<button class="btn secondary" type="button" data-action="cancel-advice">Cancelar edición</button>' : ''}</form></section>` : ''}`;
 }
+function navigationMenu() {
+  const staff = role !== 'resident';
+  const openGroups = new Set([...$('#nav').querySelectorAll('details[open]')].map(d => d.dataset.navGroup));
+  const link = ([id, icon, label]) => `<button type="button" data-page="${id}" class="${id === page ? 'active' : ''}" ${id === page ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span><span>${label}</span></button>`;
+  const folder = (id, label, items) => {
+    const active = items.some(([item]) => item === page);
+    return `<details class="nav-folder ${active ? 'has-active' : ''}" data-nav-group="${id}" ${active || openGroups.has(id) ? 'open' : ''}><summary><span aria-hidden="true">▱</span><span>${label}</span><span class="nav-chevron" aria-hidden="true">›</span></summary><div class="nav-children">${items.map(link).join('')}</div></details>`;
+  };
+  return link(['home', '⌂', 'Mi comunidad']) + link(['assistant', '✧', 'Asistente'])
+    + folder('documents', 'Documentos', [['documents', '▤', 'Consultar documentos'], ...(staff ? [['knowledge', '▤', 'Gestionar documentos'], ['deliveries', '↗', 'Envío de documentos']] : [])])
+    + folder('messages', 'Mensajes', [[staff ? 'staffMessages' : 'residentMessages', '♧', 'Bandeja de mensajes'], ['tickets', '✉', 'Consultas comunidad'], ...(!staff ? [['messages', '✉', 'Avisos particulares']] : [])])
+    + (staff ? folder('neighbors', 'Vecinos', [['directory', '▤', 'Directorio de vecinos'], ['neighborContact', '✉', 'Contacto con los vecinos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : [])]) : '')
+    + link(['advice', '✦', 'Consejos, ayudas y servicios'])
+    + link(staff ? ['admin', '▦', 'Administración'] : ['services', '◇', 'Consultas particulares']);
+}
 function render() {
   document.documentElement.style.setProperty('--accent', state.color);
   document.documentElement.style.setProperty('--community-photo', `url("${state.backgroundImage}")`);
   document.documentElement.style.setProperty('--community-photo-position', state.backgroundPosition);
   $('#content').classList.toggle('home-page', page === 'home');
   $('#community-name').textContent = state.name;
-  const basePages = role === 'resident' ? [...pages, ['messages', '✉', 'Avisos particulares']] : pages.filter(([id]) => id !== 'services');
-  const navigation = role !== 'resident' ? [...basePages, ['admin', '▦', 'Administración'], ['staffMessages', '♧', 'Bandeja de mensajes'], ['directory', '▤', 'Directorio de vecinos'], ['neighborContact', '✉', 'Contacto con los vecinos'], ['knowledge', '▤', 'Gestionar documentos'], ...(role === 'manager' ? [['serviceInbox', '◇', 'Atención particular']] : []), ['deliveries', '↗', 'Envío de documentos']] : basePages;
   if (['admin', 'deliveries', 'knowledge', 'neighborContact', 'staffMessages', 'directory'].includes(page) && role === 'resident') page = 'home';
   if (['messages','residentMessages'].includes(page) && role !== 'resident') page = 'home';
   if ((page === 'serviceInbox' && role !== 'manager') || (page === 'services' && role !== 'resident')) page = 'home';
-  $('#nav').innerHTML = navigation.map(([id, icon, label]) => `<button data-page="${id}" class="${id === page ? 'active' : ''}" ${id === page ? 'aria-current="page"' : ''}><span aria-hidden="true">${icon}</span> &nbsp; ${label}</button>`).join('');
+  $('#nav').innerHTML = navigationMenu();
   $('#staff-inbox-slot').innerHTML = staffBell();
   $('#content').innerHTML = urgentBanners() + neighborInboxNotice() + ({ home, assistant, documents, tickets, services, admin, deliveries, serviceInbox, knowledge, advice, neighborContact, messages, staffMessages, residentMessages, directory })[page]();
   document.title = `VecinoIA · ${state.name}`;

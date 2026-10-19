@@ -14,7 +14,7 @@ Web que debes grabar: https://vecinoia-production.up.railway.app/
 6. En **Usuario**, escribe `vecino.olivos`.
 7. En **Contraseña**, escribe `Olivos-Demo-2026!`.
 8. Pulsa **Entrar en mi portal ↗**. Debes ver **Residencial Los Olivos** y el menú de la izquierda. Si estás en otra sección, pulsa **Mi comunidad**.
-9. Comprueba en **Documentos** que aparece **Normas del gimnasio ficticio de Los Olivos**. Vuelve a **Mi comunidad** antes de grabar. Si falta ese documento, detén la preparación y comunícalo; no inventes su horario.
+9. Abre la carpeta **Documentos** y pulsa **Consultar documentos**. Comprueba que aparece **Normas del gimnasio ficticio de Los Olivos**. Vuelve a **Mi comunidad** antes de grabar. Si falta ese documento, detén la preparación y comunícalo; no inventes su horario.
 10. Guarda las frases para pegar de la siguiente sección en un Bloc de notas, fuera del área grabada. Practica los cambios de usuario una vez. No uses pestañas normales para mantener varios roles: comparten sesión.
 11. Durante el ensayo puedes generar consultas de prueba. En la grabación definitiva usa los asuntos «Vídeo final» indicados abajo, para distinguirlos de los ensayos. Si repites la grabación, añade «toma 2» al asunto y busca esa misma consulta al responder.
 12. Inicia la grabación con la portada de **Mi comunidad** abierta como vecino. El acceso inicial ya estará hecho; los dos cambios de usuario posteriores sí se muestran.
@@ -81,13 +81,13 @@ Todas son públicas y ficticias. Sus claves pueden mostrarse en la demostración
 
 **SI HAY UN PROBLEMA:** Si aparece un aviso de fallo de IA, una respuesta sin soporte o un horario distinto, no sigas leyendo como si fuera correcto. Detén el ensayo y revisamos la incidencia. No prometas que todas las respuestas son infalibles.
 
-**SIGUIENTE CLIC:** Consultas comunidad, a la izquierda.
+**SIGUIENTE CLIC:** Abre **Mensajes**, a la izquierda, y pulsa **Consultas comunidad**.
 
 ## Escena 3 · El vecino comunica una incidencia · 0:55–1:25
 
 **PINCHA Y ESCRIBE:**
 
-1. Pulsa **Consultas comunidad**.
+1. Abre la carpeta **Mensajes** y pulsa **Consultas comunidad**. Si ya está abierta, pulsa directamente la opción.
 2. En la tarjeta **Nueva consulta**, pulsa **Asunto** y pega: **Vídeo final — Luz del portal fundida**.
 3. Abre **Categoría** y selecciona **Incidencia**.
 4. Deja **Prioridad** en **Normal**.
@@ -99,13 +99,13 @@ Todas son públicas y ficticias. Sus claves pueden mostrarse en la demostración
 
 > «Cuando hay un problema del edificio, el vecino registra una incidencia. Queda asociada a su usuario y puede seguir el estado y la respuesta del administrador.»
 
-**SIGUIENTE CLIC:** Documentos, a la izquierda.
+**SIGUIENTE CLIC:** Abre **Documentos**, a la izquierda, y pulsa **Consultar documentos**.
 
 ## Escena 4 · Documentación a mano · 1:25–1:45
 
 **PINCHA Y MUESTRA:**
 
-1. Pulsa **Documentos**.
+1. Abre la carpeta **Documentos** y pulsa **Consultar documentos**.
 2. Busca **Normas del gimnasio ficticio de Los Olivos**.
 3. Pulsa su título para desplegar el contenido.
 4. Señala los botones **Descargar original** y **Solicitar envío**, situados debajo. En esta grabación basta con señalarlos: no abras el correo ni WhatsApp y no envíes mensajes reales.
@@ -159,7 +159,7 @@ Todas son públicas y ficticias. Sus claves pueden mostrarse en la demostración
 
 **PRIMERO: MUESTRA EL DOCUMENTO PUBLICADO.**
 
-1. En el menú izquierdo pulsa **Gestionar documentos**. Si el menú no cabe, desplázate dentro de él o reduce ligeramente el zoom del navegador antes de empezar a grabar, no a mitad de la toma.
+1. En el menú izquierdo abre **Documentos** y pulsa **Gestionar documentos**. Puedes plegar otras carpetas pulsando su nombre para dejar más espacio.
 2. Señala el formulario **Subir un documento** y sus campos **Título del documento** y **Archivo**. No necesitas seleccionar ni cargar otro archivo durante el vídeo.
 3. Baja por la página hasta **Normas del gimnasio ficticio de Los Olivos**.
 4. Comprueba que su estado es **Publicado**.
@@ -206,7 +206,7 @@ Todas son públicas y ficticias. Sus claves pueden mostrarse en la demostración
 2. En **Usuario**, escribe **gestion**, sin tilde.
 3. En **Contraseña**, escribe **Gestion-Demo-2026!**.
 4. Pulsa **Entrar en mi portal ↗**.
-5. Pulsa **Atención particular** en el menú izquierdo.
+5. Abre la carpeta **Vecinos** y pulsa **Atención particular**. Esta opción aparece en Gestión VecinoIA; no aparece en el administrador.
 
 **DI:**
 

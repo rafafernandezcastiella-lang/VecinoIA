@@ -196,3 +196,7 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 031 — Campana y aviso de correo para el vecino
 
 18 de octubre de 2026. El usuario pide extender la campana al vecino cuando le responden el administrador o el gestor y avisar por correo. Se añade bandeja privada de respuestas y avisos particulares, contador de pendientes, actualización periódica y lectura persistente. Una respuesta modificada vuelve a avisar; guardar sin cambios no duplica notificaciones. Se mantiene correo simulado conforme a la elección expresa previa de demo sin correos reales. Treinta pruebas aprobadas y recorrido en Edge con respuestas de ambos roles, lectura, recarga y móvil, usando almacenamiento temporal sin modificar consultas de producción.
+
+## 032 — Agrupar el menú por Documentos, Mensajes y Vecinos
+
+19 de octubre de 2026. El usuario solicita ordenar visualmente los menús sin cambiar la funcionalidad. Se crean carpetas desplegables accesibles con Documentos (consulta, gestión y envío), Mensajes (bandeja y consultas, más avisos particulares para vecinos) y Vecinos (directorio, contacto y Atención particular exclusiva de Gestión). Se conserva el acceso por rol y la campana abre automáticamente su carpeta. Validación en Edge de los tres roles, teclado, cada submenú y resoluciones de móvil, iPad y escritorio. Se adapta el guion paso a paso y su HTML imprimible a esta organización.
