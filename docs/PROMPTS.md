@@ -212,3 +212,7 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 035 — Avisos urgentes únicamente en Mi comunidad
 
 19 de octubre de 2026. El usuario solicita que los avisos urgentes solo aparezcan en Mi comunidad para todos los perfiles. Se limita el banner a esa página mediante una condición compartida por renderizado, actualización periódica y ocultación individual. No se cambian los avisos guardados ni los controles administrativos para gestionarlos. Edge comprueba todos los destinos del menú y la campana con vecino, administrador y gestión, regreso a portada y actualización periódica sin borrar formularios. Ensayos con datos temporales; sin añadir anuncios en producción.
+
+## 036 — Simplificar la entrada al asistente
+
+19 de octubre de 2026. A partir de una captura, el usuario solicita retirar las ventanas previas y dejar solo la barra de consulta. Se elimina el bloque técnico de modo, saludo, sugerencias y cabecera de esa sección. El historial aparece después de preguntar y conserva respuestas, fuentes y derivación cuando falta soporte. Edge verifica entrada limpia, consulta y fuente con los tres roles y móvil. Datos temporales con búsqueda local, sin llamadas de pago ni consultas de prueba en producción.

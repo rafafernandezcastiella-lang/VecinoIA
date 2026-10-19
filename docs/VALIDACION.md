@@ -150,3 +150,7 @@ La limpieza puntual conserva copia previa e impide repetir el borrado en reinici
 ## Banner urgente solo en Mi comunidad — 19 de octubre
 
 Edge verifica con los tres roles un aviso urgente activo en portada, ausencia de banner en cada otra sección y en la bandeja de la campana, y recuperación al volver a Mi comunidad. Para vecino se comprueba además actualización periódica manteniendo un borrador sin reintroducir banners. No hay errores JavaScript y los avisos de producción no se modifican. Los controles administrativos de publicación y finalización se conservan.
+
+## Entrada simplificada del asistente — 19 de octubre
+
+Edge comprueba en los tres perfiles la barra como único contenido inicial del asistente, ausencia de saludo, sugerencias y aviso técnico; al preguntar se conservan la pregunta, respuesta y fuente desplegable. Vista móvil sin desbordamiento ni errores JavaScript. La comprobación utiliza búsqueda documental sin API de pago y datos temporales.
