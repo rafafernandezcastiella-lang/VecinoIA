@@ -220,3 +220,15 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 037 — Nueva limpieza antes de grabar
 
 19 de octubre de 2026. El usuario vuelve a solicitar que no exista ninguna consulta antes del vídeo. Se ejecuta otra limpieza puntual con identificador propio reset-consultations-video-2026-10-19-toma2 y copia previa independiente. Se eliminan consultas comunitarias y particulares con sus respuestas y recibos relacionados, conservando documentos, anuncios, contactos y avisos individuales. La limpieza no vuelve a ejecutarse en reinicios posteriores. Se comprueba el estado público antes y después.
+
+## 038 — Preparación de la entrega final y vídeo grabado
+
+Texto del usuario: «Bien, ya tengo el video grabado. Vamos a preparar la entrega, Guíame paso a paso».
+
+19 de octubre de 2026. Se comprueban los metadatos del MP4 local: 280,503 segundos (4:40,5), 1920 × 914 y pista de audio indicada por el sistema; esto no sustituye una revisión de voz y contenido. Se verifica permiso de lectura para cualquiera con enlace en la carpeta y los dos Google Docs. Se prepara su actualización con los cambios posteriores al día 16, la incorporación del vídeo y los enlaces para el formulario. El envío final y la comprobación del acceso del jurado al repositorio siguen pendientes hasta confirmación.
+
+## 039 — Repositorio público para completar la entrega
+
+Texto del usuario: «lo hacemos publico y lo dejamos ya subido».
+
+19 de octubre de 2026. Tras observar invitación pendiente a TheBIGschool, el usuario autoriza hacer público el repositorio. Se revisan 166 objetos de texto del historial sin detectar patrones de claves privadas ni archivos de datos protegidos; se cambia la visibilidad de rafafernandezcastiella-lang/VecinoIA a public y se comprueba acceso por API sin credenciales. La rama por defecto es codex/hackathon. Se conservan la aplicación y el vídeo ya subidos. El formulario requiere revisión de la declaración responsable y envío del usuario; no se afirma que esté presentado hasta recibir confirmación.
