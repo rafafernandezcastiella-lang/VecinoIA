@@ -392,7 +392,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const port = Number(process.env.PORT || 3000);
   const host = process.env.HOST || '127.0.0.1';
   if (process.env.NODE_ENV === 'production') {
-    const result = resetConsultationsOnce(join(resolve(process.env.DATA_DIR || join(root, 'data')), 'demo.json'), 'reset-consultations-video-2026-10-19');
+    const result = resetConsultationsOnce(join(resolve(process.env.DATA_DIR || join(root, 'data')), 'demo.json'), 'reset-consultations-video-2026-10-19-toma2');
     if (result.applied) console.log('Limpieza puntual para el vídeo:', JSON.stringify(result));
   }
   const server = createApp();

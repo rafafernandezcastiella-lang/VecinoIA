@@ -216,3 +216,7 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 036 — Simplificar la entrada al asistente
 
 19 de octubre de 2026. A partir de una captura, el usuario solicita retirar las ventanas previas y dejar solo la barra de consulta. Se elimina el bloque técnico de modo, saludo, sugerencias y cabecera de esa sección. El historial aparece después de preguntar y conserva respuestas, fuentes y derivación cuando falta soporte. Edge verifica entrada limpia, consulta y fuente con los tres roles y móvil. Datos temporales con búsqueda local, sin llamadas de pago ni consultas de prueba en producción.
+
+## 037 — Nueva limpieza antes de grabar
+
+19 de octubre de 2026. El usuario vuelve a solicitar que no exista ninguna consulta antes del vídeo. Se ejecuta otra limpieza puntual con identificador propio reset-consultations-video-2026-10-19-toma2 y copia previa independiente. Se eliminan consultas comunitarias y particulares con sus respuestas y recibos relacionados, conservando documentos, anuncios, contactos y avisos individuales. La limpieza no vuelve a ejecutarse en reinicios posteriores. Se comprueba el estado público antes y después.
