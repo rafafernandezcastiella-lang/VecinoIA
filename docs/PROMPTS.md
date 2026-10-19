@@ -204,3 +204,11 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 033 — Limpiar consultas antes del vídeo final
 
 19 de octubre de 2026. El usuario pide vaciar todas las consultas para crearlas durante el vídeo. Se programa una limpieza puntual con marcador persistente reset-consultations-video-2026-10-19 y copia completa previa en el volumen. Elimina consultas comunitarias y particulares, sus respuestas y sus recibos/correos simulados; conserva documentos, anuncios, directorio, avisos particulares y solicitudes de envío. No se repite en posteriores reinicios y preserva las consultas que se creen tras esta operación. Prueba de idempotencia y conservación de colecciones; comprobación del estado público antes y después sin crear mensajes de ensayo.
+
+## 034 — Guion final paso a paso para la grabación
+
+19 de octubre de 2026. El usuario solicita un guion ordenado para el vídeo tras limpiar las consultas. Se prepara una versión actualizada de nueve escenas y objetivo orientativo de 4:50, con rutas de los nuevos menús, cuentas ficticias, mensajes para pegar y narración separada de los clics. El recorrido demuestra IA y fuente, documentos, creación comunitaria y particular, supervisión documental, respuesta del administrador, atención privada de Gestión y regreso al vecino para mostrar campana y lectura. Se declara expresamente correo simulado y avatar futuro. Guion disponible en Markdown y HTML imprimible; duración pendiente de ensayo con el usuario.
+
+## 035 — Avisos urgentes únicamente en Mi comunidad
+
+19 de octubre de 2026. El usuario solicita que los avisos urgentes solo aparezcan en Mi comunidad para todos los perfiles. Se limita el banner a esa página mediante una condición compartida por renderizado, actualización periódica y ocultación individual. No se cambian los avisos guardados ni los controles administrativos para gestionarlos. Edge comprueba todos los destinos del menú y la campana con vecino, administrador y gestión, regreso a portada y actualización periódica sin borrar formularios. Ensayos con datos temporales; sin añadir anuncios en producción.

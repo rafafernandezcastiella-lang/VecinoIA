@@ -1,256 +1,235 @@
-# Guion de grabación de VecinoIA: clics y texto para leer
+# VecinoIA · Guion del vídeo final, paso a paso
 
-Versión detallada del 16 de octubre de 2026. Objetivo orientativo: 4 minutos y 40 segundos. Límite del concurso: 5 minutos. Los tiempos son referencias para el ensayo, no una duración medida. No leas en voz alta las instrucciones: lee únicamente los textos marcados «DI».
+Actualizado el 19 de octubre de 2026. Duración objetivo: 4 minutos y 50 segundos. Límite: 5 minutos. Los tiempos son orientativos: comprueba la duración en un ensayo. Lee en voz alta únicamente los recuadros azules marcados DI. Las instrucciones de clic no se leen.
 
-Web que debes grabar: https://vecinoia-production.up.railway.app/
+Aplicación: https://vecinoia-production.up.railway.app/
 
-## Antes de empezar: esta parte no se graba
+## Preparación · NO SE GRABA
 
-1. Abre la web en un navegador del ordenador y maximiza la ventana.
-2. Abre este guion en otro dispositivo o imprímelo. Evita que tape la aplicación durante la grabación.
-3. Cierra las pestañas de claves, facturación y datos personales. Graba solo la ventana de VecinoIA. No necesitas enseñar tu cara.
-4. Comprueba que se escucha el micrófono con una prueba de veinte segundos.
-5. Si ya estás dentro de la web, pulsa **Cerrar sesión**, arriba a la derecha.
-6. En **Usuario**, escribe `vecino.olivos`.
-7. En **Contraseña**, escribe `Olivos-Demo-2026!`.
-8. Pulsa **Entrar en mi portal ↗**. Debes ver **Residencial Los Olivos** y el menú de la izquierda. Si estás en otra sección, pulsa **Mi comunidad**.
-9. Abre la carpeta **Documentos** y pulsa **Consultar documentos**. Comprueba que aparece **Normas del gimnasio ficticio de Los Olivos**. Vuelve a **Mi comunidad** antes de grabar. Si falta ese documento, detén la preparación y comunícalo; no inventes su horario.
-10. Guarda las frases para pegar de la siguiente sección en un Bloc de notas, fuera del área grabada. Practica los cambios de usuario una vez. No uses pestañas normales para mantener varios roles: comparten sesión.
-11. Durante el ensayo puedes generar consultas de prueba. En la grabación definitiva usa los asuntos «Vídeo final» indicados abajo, para distinguirlos de los ensayos. Si repites la grabación, añade «toma 2» al asunto y busca esa misma consulta al responder.
-12. Inicia la grabación con la portada de **Mi comunidad** abierta como vecino. El acceso inicial ya estará hecho; los dos cambios de usuario posteriores sí se muestran.
+1. Graba la pantalla del ordenador con tu micrófono. No hace falta que aparezca tu cara ni grabar con el móvil. Usa el iPad para leer este guion, fuera de la grabación.
+2. Maximiza la ventana de VecinoIA. Cierra otras pestañas y oculta notificaciones del ordenador. Comprueba voz y pantalla con una grabación de veinte segundos.
+3. Ten los textos de la tabla siguiente preparados para copiar y pegar. No los leas además de la narración.
+4. Empieza dentro de VecinoIA como vecino: usuario **vecino.olivos**, contraseña **Olivos-Demo-2026!**. Si estás como administrador o gestión, pulsa **Cerrar sesión**, introduce esos datos y pulsa **Entrar en mi portal ↗**.
+5. Comprueba que estás en **Residencial Los Olivos**. El vecino no tiene selector de comunidades.
+6. Abre **Documentos → Consultar documentos**. Comprueba que existe **Normas del gimnasio ficticio de Los Olivos** y que indica cierre a las **22:00**. Vuelve a **Mi comunidad**.
+7. Las consultas de ensayo se han vaciado. Crea las dos consultas del guion durante la grabación. Si repites una toma, añade **toma 2** a ambos asuntos y busca ese mismo asunto al responder. No borres consultas durante la toma.
+8. Practica los accesos. Las pestañas normales del mismo navegador comparten sesión: para este guion usa una sola ventana y cambia con **Cerrar sesión**.
+9. Prepara un cronómetro fuera del área grabada. Inicia la grabación con **Mi comunidad** abierta como vecino.
 
-### Textos que conviene tener preparados para copiar y pegar
+### Usuarios ficticios que utilizarás
 
-| Uso | Texto exacto |
+| Orden | Usuario | Contraseña |
+|---|---|---|
+| Inicio y final del vídeo | vecino.olivos | Olivos-Demo-2026! |
+| Administrador | administrador | Admin-Demo-2026! |
+| Gestión | gestion | Gestion-Demo-2026! |
+
+Estas claves son públicas y exclusivas de la demo. No muestres claves privadas de API ni páginas de facturación.
+
+### Textos exactos para copiar y pegar
+
+| Campo | Texto |
 |---|---|
-| Pregunta de IA | ¿A qué hora cierra el gym? |
-| Asunto de incidencia | Vídeo final — Luz del portal fundida |
-| Mensaje de incidencia | La luz de la entrada del portal no funciona. Es una incidencia ficticia para la demostración. |
+| Pregunta al asistente | ¿A qué hora cierra el gym? |
+| Asunto comunitario | Vídeo final — Luz del portal |
+| Mensaje comunitario | La luz de la entrada del portal no funciona. Incidencia ficticia para la demostración. |
 | Respuesta del administrador | Hemos avisado al servicio de mantenimiento para revisar la luz del portal. |
 | Asunto particular | Vídeo final — Consulta de gas |
-| Mensaje particular | Quiero orientación sobre mi contrato individual de gas para el agua caliente. Consulta ficticia. |
-| Respuesta de Gestión VecinoIA | Hemos recibido tu consulta de gas. Te indicaremos qué información necesitamos para revisarla de forma privada. |
-
-### Cuentas que usarás durante el vídeo
-
-Todas son públicas y ficticias. Sus claves pueden mostrarse en la demostración; no son la clave privada de OpenAI.
-
-| Momento | Usuario | Contraseña |
-|---|---|---|
-| Inicio, ya identificado | vecino.olivos | Olivos-Demo-2026! |
-| Segundo acceso | administrador | Admin-Demo-2026! |
-| Tercer acceso | gestion | Gestion-Demo-2026! |
+| Consulta particular | Quiero orientación sobre mi contrato individual de gas para el agua caliente. Consulta ficticia. |
+| Respuesta de Gestión | Revisaremos tu consulta de gas y te indicaremos por este canal qué información necesitamos. |
 
 ## Escena 1 · Presentación · 0:00–0:20
 
-**ESTÁS EN:** Mi comunidad, como vecino de Los Olivos.
+**USUARIO:** Vecino. **PANTALLA:** Mi comunidad.
 
-**PINCHA Y MUESTRA:**
+**HAZ ESTO:**
 
-1. Mantén la portada a la vista.
-2. Mueve el cursor despacio hacia el nombre **Residencial Los Olivos**, sin pulsar.
-3. Señala el menú de la izquierda y los avisos. No hace falta abrirlos todos.
+1. Deja visible la portada durante la presentación.
+2. Señala con el cursor el nombre de la comunidad y las carpetas del menú izquierdo. No abras todavía las secciones.
 
 **DI:**
 
-> «Este es VecinoIA, un portal inteligente para comunidades basado en la propuesta de ANPARA. Reúne información, documentos y atención al vecino. Toda esta demostración utiliza usuarios, comunidades y datos ficticios.»
+> «Presento VecinoIA, un portal inteligente para comunidades basado en la propuesta de ANPARA. Reúne respuestas con inteligencia artificial, documentos y comunicación con la administración. Todos los usuarios y datos de esta demostración son ficticios.»
 
-**SIGUIENTE CLIC:** Asistente, en el menú de la izquierda.
+**SIGUIENTE:** pulsa **Asistente**.
 
-## Escena 2 · La IA responde y enseña su fuente · 0:20–0:55
+## Escena 2 · Preguntar al asistente y comprobar la fuente · 0:20–1:00
 
-**ESTÁS EN:** Asistente, como vecino.
+**USUARIO:** Vecino. **RUTA:** Asistente.
 
-**PINCHA Y ESCRIBE:**
+**HAZ ESTO:**
 
-1. Pulsa **Asistente** en el menú de la izquierda si aún no lo has abierto.
-2. Pulsa el campo **¿Qué quieres saber de tu comunidad?**.
-3. Escribe o pega: **¿A qué hora cierra el gym?**
-4. Pulsa **Consultar ↗**, a la derecha del campo.
-5. Mientras espera, lee la primera frase de abajo. No pulses Consultar otra vez.
-6. Cuando aparezca la respuesta, busca debajo **Fuente: Normas del gimnasio ficticio de Los Olivos** y pulsa ese texto. Si aparecen varias fuentes, abre la que nombra el gimnasio.
-7. Deja visible la respuesta y el fragmento de origen. Según el documento publicado, debe indicar cierre a las **22:00**.
+1. Pulsa **Asistente**, a la izquierda.
+2. En el campo **¿Qué quieres saber de tu comunidad?**, pega **¿A qué hora cierra el gym?**.
+3. Pulsa **Consultar ↗** una sola vez.
+4. Mientras se genera la respuesta, di la primera frase.
+5. Cuando aparezca, pulsa **Fuente: Normas del gimnasio ficticio de Los Olivos**, debajo de la respuesta, para abrir el fragmento.
+6. Deja a la vista la respuesta y su fuente. El documento del ejemplo indica cierre a las **22:00**.
 
-**DI mientras espera:**
+**DI MIENTRAS ESPERAS:**
 
-> «El vecino pregunta con sus propias palabras, incluso usando “gym”. La IA consulta las fuentes que la administración ha publicado para esta comunidad.»
+> «El vecino pregunta con sus propias palabras. La IA utiliza los documentos publicados para su comunidad, incluso si escribimos “gym” en lugar de gimnasio.»
 
-**DI cuando se vea la fuente:**
+**DI AL ABRIR LA FUENTE:**
 
-> «Aquí responde con el horario y permite comprobar el documento de origen. Si falta información suficiente, ofrece trasladar la pregunta al administrador.»
+> «La respuesta permite comprobar su documento de origen. Si falta información suficiente, la consulta se puede trasladar al administrador.»
 
-**SI HAY UN PROBLEMA:** Si aparece un aviso de fallo de IA, una respuesta sin soporte o un horario distinto, no sigas leyendo como si fuera correcto. Detén el ensayo y revisamos la incidencia. No prometas que todas las respuestas son infalibles.
+**SI FALLA:** detén la toma y revisamos el problema; no leas como si se hubiera mostrado una respuesta correcta. No repitas preguntas para llenar el vídeo.
 
-**SIGUIENTE CLIC:** Abre **Mensajes**, a la izquierda, y pulsa **Consultas comunidad**.
+## Escena 3 · Documentos disponibles para el vecino · 1:00–1:20
 
-## Escena 3 · El vecino comunica una incidencia · 0:55–1:25
+**USUARIO:** Vecino. **RUTA:** Documentos → Consultar documentos.
 
-**PINCHA Y ESCRIBE:**
+**HAZ ESTO:**
 
-1. Abre la carpeta **Mensajes** y pulsa **Consultas comunidad**. Si ya está abierta, pulsa directamente la opción.
-2. En la tarjeta **Nueva consulta**, pulsa **Asunto** y pega: **Vídeo final — Luz del portal fundida**.
-3. Abre **Categoría** y selecciona **Incidencia**.
-4. Deja **Prioridad** en **Normal**.
-5. En **Mensaje**, pega: **La luz de la entrada del portal no funciona. Es una incidencia ficticia para la demostración.**
+1. Pulsa la carpeta **Documentos** para desplegarla.
+2. Pulsa **Consultar documentos**.
+3. Busca **Normas del gimnasio ficticio de Los Olivos** y pulsa su título para desplegarlo.
+4. Señala **Descargar original** y **Solicitar envío**. No hace falta pulsar estos botones durante la toma.
+
+**DI:**
+
+> «El vecino puede consultar y descargar documentos o solicitar su envío por correo o WhatsApp. El gestor prepara un enlace y abre su aplicación para enviarlo.»
+
+## Escena 4 · Crear una incidencia comunitaria · 1:20–1:50
+
+**USUARIO:** Vecino. **RUTA:** Mensajes → Consultas comunidad.
+
+**HAZ ESTO:**
+
+1. Abre la carpeta **Mensajes**.
+2. Pulsa **Consultas comunidad**.
+3. En **Nueva consulta**, completa **Asunto** con **Vídeo final — Luz del portal**.
+4. En **Categoría**, selecciona **Incidencia**. Deja **Prioridad** en **Normal**.
+5. En **Mensaje**, pega **La luz de la entrada del portal no funciona. Incidencia ficticia para la demostración.**
 6. Pulsa **Enviar consulta**.
-7. Busca el asunto recién creado en **Mis consultas**. Debe tener estado **Pendiente**. Si no lo ves, desplázate un poco hacia abajo.
+7. Señala la tarjeta del nuevo asunto en **Mis consultas**. Debe aparecer **Pendiente**.
 
-**DI mientras completas el formulario:**
+**DI MIENTRAS LO HACES:**
 
-> «Cuando hay un problema del edificio, el vecino registra una incidencia. Queda asociada a su usuario y puede seguir el estado y la respuesta del administrador.»
+> «Cuando hay un problema del edificio, el vecino registra una incidencia. La administración recibe el aviso y puede responder y actualizar su estado.»
 
-**SIGUIENTE CLIC:** Abre **Documentos**, a la izquierda, y pulsa **Consultar documentos**.
+## Escena 5 · Crear una consulta privada de gas · 1:50–2:25
 
-## Escena 4 · Documentación a mano · 1:25–1:45
+**USUARIO:** Vecino. **RUTA:** Consejos, ayudas y servicios → Consultas particulares.
 
-**PINCHA Y MUESTRA:**
+**HAZ ESTO:**
 
-1. Abre la carpeta **Documentos** y pulsa **Consultar documentos**.
-2. Busca **Normas del gimnasio ficticio de Los Olivos**.
-3. Pulsa su título para desplegar el contenido.
-4. Señala los botones **Descargar original** y **Solicitar envío**, situados debajo. En esta grabación basta con señalarlos: no abras el correo ni WhatsApp y no envíes mensajes reales.
+1. Pulsa **Consejos, ayudas y servicios**, a la izquierda.
+2. Señala brevemente las fichas. No abras varias ni leas sus textos completos.
+3. Pulsa **Consultas particulares**, a la izquierda.
+4. Baja hasta el formulario **Nueva consulta particular**.
+5. Selecciona **Gas** en **Categoría**.
+6. En **Asunto**, pega **Vídeo final — Consulta de gas**.
+7. En **Tu consulta**, pega **Quiero orientación sobre mi contrato individual de gas para el agua caliente. Consulta ficticia.**
+8. Pulsa **Enviar a Gestión VecinoIA**.
+9. Señala el asunto en **Mis consultas particulares**.
 
 **DI:**
 
-> «Los documentos están disponibles para consultar y descargar. También se puede solicitar un enlace por correo o WhatsApp. El gestor prepara el mensaje y realiza el envío desde su aplicación.»
+> «También hay un espacio ampliable de consejos, ayudas y servicios. Una consulta individual de gas se dirige a Gestión VecinoIA. Es privada entre ese equipo y el vecino; el administrador ordinario no accede a ella.»
 
-**SIGUIENTE CLIC:** Consejos, ayudas y servicios, a la izquierda.
+## Escena 6 · Entrar como administrador y responder · 2:25–3:25
 
-## Escena 5 · Consulta particular de gas · 1:45–2:25
+**USUARIO:** Cambias de Vecino a Administrador.
 
-**PINCHA Y ESCRIBE:**
-
-1. Pulsa **Consejos, ayudas y servicios**.
-2. En **Explorar**, deja **Todas**.
-3. Busca la ficha **Un espacio también para tus dudas de gas**. Si está más abajo, desplázate hasta ella.
-4. En esa ficha pulsa **Solicitar orientación privada ↗**.
-5. Se abrirá **Consultas particulares** y se desplazará hasta **Nueva consulta particular**.
-6. Comprueba que **Categoría** indica **Gas**. Si no, selecciónala.
-7. En **Asunto**, pega: **Vídeo final — Consulta de gas**.
-8. En **Tu consulta**, pega: **Quiero orientación sobre mi contrato individual de gas para el agua caliente. Consulta ficticia.**
-9. Pulsa **Enviar a Gestión VecinoIA**.
-10. Busca el nuevo asunto en **Mis consultas particulares**, a la derecha o más abajo.
-
-**DI mientras muestras la sección:**
-
-> «VecinoIA también ofrece un espacio ampliable de consejos, ayudas y servicios. Estas fichas son ejemplos, no ofertas ni ayudas vigentes.»
-
-**DI mientras envías la consulta:**
-
-> «Una duda particular de gas se envía por un canal privado. Solo la ven el vecino autor y Gestión VecinoIA autorizada. No va a la administración ordinaria.»
-
-**SIGUIENTE CLIC:** Cerrar sesión, arriba a la derecha.
-
-## Escena 6 · Cambiar a administrador · 2:25–2:40
-
-**PINCHA Y ESCRIBE:**
+**PRIMERO: CAMBIA DE USUARIO.**
 
 1. Pulsa **Cerrar sesión**, arriba a la derecha.
 2. En **Usuario**, escribe **administrador**.
 3. En **Contraseña**, escribe **Admin-Demo-2026!**.
 4. Pulsa **Entrar en mi portal ↗**.
-5. Espera a que aparezca el menú. En el selector **Tu comunidad**, arriba a la izquierda, comprueba **Residencial Los Olivos**.
+5. Señala brevemente el selector **Tu comunidad**: permite al administrador cambiar entre sus comunidades. Déjalo en **Residencial Los Olivos**.
 
-**DI:**
+**DESPUÉS: MUESTRA LA SUPERVISIÓN DOCUMENTAL.**
 
-> «Ahora accedo como administrador para mostrar cómo se controla la información y se atienden las incidencias.»
+6. Abre **Documentos → Gestionar documentos**.
+7. Señala **Subir un documento**, **Título del documento** y **Archivo**. No cargues otro archivo durante la toma.
+8. Baja hasta **Normas del gimnasio ficticio de Los Olivos** y señala su estado **Publicado**. No pulses **Retirar publicación**.
 
-## Escena 7 · Supervisión documental e incidencia · 2:40–3:35
+**DI MIENTRAS LO MUESTRAS:**
 
-**PRIMERO: MUESTRA EL DOCUMENTO PUBLICADO.**
+> «El administrador trabaja con sus comunidades autorizadas. Puede subir documentos, revisar el texto y publicarlos para alimentar al asistente. Los archivos nuevos permanecen en borrador hasta su aprobación.»
 
-1. En el menú izquierdo abre **Documentos** y pulsa **Gestionar documentos**. Puedes plegar otras carpetas pulsando su nombre para dejar más espacio.
-2. Señala el formulario **Subir un documento** y sus campos **Título del documento** y **Archivo**. No necesitas seleccionar ni cargar otro archivo durante el vídeo.
-3. Baja por la página hasta **Normas del gimnasio ficticio de Los Olivos**.
-4. Comprueba que su estado es **Publicado**.
-5. Pulsa **Revisar texto procesado (…)** para enseñar el texto. El número de caracteres puede variar: pulsa la línea que empieza por esas palabras.
-6. Señala **Retirar publicación**, sin pulsarlo. Deja el documento publicado para que la demo siga funcionando.
+**AHORA: ABRE EL MENSAJE Y RESPONDE.**
 
-**DI:**
+9. Pulsa la **campana Mensajes**, arriba a la derecha.
+10. Busca **Vídeo final — Luz del portal** y pulsa **Ver mensaje** en esa tarjeta. Se abre **Administración** y se registra la lectura.
+11. En la tarjeta de esa incidencia, selecciona **En curso** en **Estado**.
+12. En **Respuesta**, pega **Hemos avisado al servicio de mantenimiento para revisar la luz del portal.**
+13. Pulsa **Guardar respuesta**, dentro de esa tarjeta.
+14. Comprueba que aparecen la respuesta y el estado **En curso**.
 
-> «Desde aquí se cargan PDF con texto, Word o TXT. Los nuevos archivos quedan en borrador y se revisan antes de publicarlos. Este documento ya está publicado y es el que ha utilizado el asistente. El administrador puede retirarlo cuando sea necesario.»
+**DI MIENTRAS RESPONDES:**
 
-**DESPUÉS: RESPONDE LA INCIDENCIA.**
+> «La campana reúne los mensajes sin leer. Abro la incidencia, respondo y la dejo en curso. El vecino recibirá un aviso dentro de su portal.»
 
-7. Pulsa **Administración** en el menú izquierdo.
-8. Busca la tarjeta **Vídeo final — Luz del portal fundida**. Si repetiste la toma, busca el asunto con el sufijo que utilizaste.
-9. Dentro de esa tarjeta, abre **Estado** y elige **En curso**.
-10. En **Respuesta**, pega: **Hemos avisado al servicio de mantenimiento para revisar la luz del portal.**
-11. Pulsa **Guardar respuesta**, dentro de esa misma tarjeta.
-12. Espera al aviso **Guardado correctamente**. Comprueba que aparece **En curso** y la respuesta.
+## Escena 7 · Gestión atiende la consulta privada · 3:25–4:05
 
-**DI:**
+**USUARIO:** Cambias de Administrador a Gestión.
 
-> «La incidencia aparece en la bandeja de administración. Registro una respuesta y actualizo su estado para que el vecino pueda hacer seguimiento.»
-
-## Escena 8 · Varias comunidades con una sola cuenta · 3:35–3:50
-
-**PINCHA Y MUESTRA:**
-
-1. Arriba a la izquierda, abre el desplegable **Tu comunidad**, que ahora muestra **Residencial Los Olivos**.
-2. Selecciona **Comunidad Plaza Mayor**.
-3. Pulsa **Mi comunidad** si no ves la portada. Espera a que se muestre el nombre y fondo de Plaza Mayor.
-4. No crees ninguna consulta en esta comunidad durante la grabación.
-
-**DI:**
-
-> «El administrador puede trabajar con varias comunidades desde su cuenta. Cada vecino accede únicamente a las que tiene autorizadas.»
-
-**SIGUIENTE CLIC:** Cerrar sesión, arriba a la derecha.
-
-## Escena 9 · Cambiar a Gestión VecinoIA · 3:50–4:05
-
-**PINCHA Y ESCRIBE:**
+**HAZ ESTO:**
 
 1. Pulsa **Cerrar sesión**.
 2. En **Usuario**, escribe **gestion**, sin tilde.
 3. En **Contraseña**, escribe **Gestion-Demo-2026!**.
 4. Pulsa **Entrar en mi portal ↗**.
-5. Abre la carpeta **Vecinos** y pulsa **Atención particular**. Esta opción aparece en Gestión VecinoIA; no aparece en el administrador.
+5. Abre **Vecinos → Atención particular**. Esta opción solo está disponible para Gestión; no para el administrador.
+6. Deja **Mostrar solicitudes** en **Todas** y busca **Vídeo final — Consulta de gas**.
+7. En esa tarjeta, selecciona **En revisión** en **Estado**.
+8. En **Respuesta privada al vecino**, pega **Revisaremos tu consulta de gas y te indicaremos por este canal qué información necesitamos.**
+9. Pulsa **Guardar respuesta privada** y deja visible la respuesta.
+
+**DI MIENTRAS LO HACES:**
+
+> «Gestión VecinoIA atiende las consultas particulares desde una bandeja separada. Aquí responde a la duda de gas sin compartirla con otros vecinos ni con la administración ordinaria.»
+
+## Escena 8 · Volver al vecino y mostrar la campana · 4:05–4:35
+
+**USUARIO:** Cambias de Gestión a Vecino.
+
+**HAZ ESTO:**
+
+1. Pulsa **Cerrar sesión**.
+2. En **Usuario**, escribe **vecino.olivos**.
+3. En **Contraseña**, escribe **Olivos-Demo-2026!**.
+4. Pulsa **Entrar en mi portal ↗**.
+5. Señala la **campana Mensajes** y su contador. Incluye las respuestas que acabas de guardar; puede incluir otros avisos particulares previos.
+6. Pulsa la campana. Se abre **Tus respuestas y avisos**.
+7. Busca **Vídeo final — Consulta de gas** y pulsa **Ver respuesta** en esa tarjeta.
+8. Deja visible la respuesta de Gestión. Señala que ha bajado el contador al abrirla. No es necesario abrir también la otra respuesta durante el vídeo.
 
 **DI:**
 
-> «Por último, entro como Gestión VecinoIA, el equipo que atiende las consultas particulares.»
+> «Al volver como vecino, la campana me avisa de las respuestas. Al abrir una se marca como leída. Los avisos por correo están simulados en esta demo; no se envían correos reales.»
 
-## Escena 10 · Responder al vecino y cerrar · 4:05–4:40
+## Escena 9 · Cierre · 4:35–4:50
 
-**PINCHA Y ESCRIBE:**
+**PANTALLA:** Deja visible la respuesta al vecino. No cambies más de usuario.
 
-1. En **Atención particular**, deja **Mostrar solicitudes** en **Todas**.
-2. Busca **Vídeo final — Consulta de gas**, de Los Olivos. Si usaste «toma 2», busca exactamente ese asunto.
-3. En la misma tarjeta, abre **Estado** y selecciona **En revisión**.
-4. En **Respuesta privada al vecino**, pega: **Hemos recibido tu consulta de gas. Te indicaremos qué información necesitamos para revisarla de forma privada.**
-5. Pulsa **Guardar respuesta privada**.
-6. Espera al aviso **Guardado correctamente** y muestra la respuesta en la tarjeta.
+**DI:**
 
-**DI mientras respondes:**
+> «VecinoIA se ha construido mediante instrucciones en lenguaje natural con Codex. Une información, IA supervisada y atención al vecino. El siguiente paso será evolucionarlo hacia una aplicación profesional, con un asistente animado. Gracias.»
 
-> «Gestión recibe la consulta de gas y responde en privado. La atención particular está separada de las incidencias y de la información de la comunidad.»
+**HAZ ESTO:** termina la grabación y guarda el archivo como **VecinoIA-demo.mp4**. Comprueba que el formato de salida sea realmente MP4; cambiar la extensión de otro formato no lo convierte.
 
-**CIERRA DICIENDO:**
+## Si la toma supera cinco minutos
 
-> «VecinoIA reúne información, IA con fuentes, incidencias, documentos y atención particular. La siguiente etapa será evolucionar esta base hacia una aplicación profesional e incorporar un asistente animado. Gracias.»
+- No añadas más funcionalidades ni una segunda pregunta al asistente.
+- Acorta la escena de documentos: señala los botones sin desplegar todo el contenido.
+- En administración, señala el formulario de carga y el estado Publicado sin abrir el texto procesado.
+- Copia y pega los mensajes y respuestas; no los leas además de la narración.
+- Si la IA tarda más de lo previsto, reduce las pausas de otras escenas y repite la toma si hace falta. No aceleres la voz hasta hacerla difícil de entender.
+- El vídeo no tiene que mostrar todas las funciones: debe explicar el problema y demostrar un recorrido real y comprensible.
 
-**AHORA:** termina la grabación. Guarda el archivo como **VecinoIA-demo.mp4**. Comprueba duración, voz y lectura de pantalla antes de subirlo.
+## Comprobación antes de entregar
 
-## Si en el ensayo superas cinco minutos
+1. Reproduce el vídeo completo: debe durar **como máximo 5:00** y escucharse bien.
+2. Comprueba que se leen los textos, se ve la fuente de la IA y aparecen los tres perfiles.
+3. Deben verse la creación de consultas, la respuesta y la notificación al vecino; no basta con describirlas.
+4. No deben aparecer datos personales reales, contraseñas privadas, claves de API ni facturación. Los datos de acceso de este guion son ficticios.
+5. No afirmes que ya existe el avatar, correo automático real o ahorro energético garantizado. La documentación y el vídeo deben distinguir lo implementado de lo futuro.
+6. Sube el vídeo a la carpeta de entrega de Drive. Configura **Cualquier persona con el enlace → Lector** y verifica que se reproduce desde el enlace.
+7. Conserva el enlace individual del vídeo para el formulario oficial, además del enlace de la carpeta.
 
-No aceleres hasta que no se entienda. Mantén las diez escenas, pero acorta estas acciones:
-
-- En la escena 4, señala los botones de documentos sin desplegar el texto: ahorra unos segundos.
-- En la escena 7, señala el documento publicado sin abrir todo el texto procesado. No hagas una carga nueva durante el vídeo.
-- Usa copiar y pegar para mensajes y respuestas. No leas los mensajes ficticios completos además de la narración.
-- No añadas una segunda pregunta de IA. El guion incluye solo una para reducir esperas.
-- Si todavía excede el límite, ensaya otra toma antes de grabar la definitiva. No se ha cronometrado este recorrido con tu ritmo de lectura.
-
-## Revisión del vídeo antes de entregar
-
-Para limpiar los ensayos comunitarios desde Administración, cambia el estado de las consultas finalizadas a **Terminada**, guarda cada respuesta y pulsa **Eliminar completadas**. Solo se borran las terminadas de la comunidad seleccionada; también desaparecen de la vista de sus vecinos. No pulses ese botón mientras necesitas mostrar esas consultas en la grabación. Las consultas particulares pertenecen al canal separado de Gestión VecinoIA.
-
-- Dura como máximo 5:00 y se escucha tu voz sin cortes importantes.
-- Se leen los menús y las respuestas. La ventana está maximizada y no aparecen datos personales, claves privadas ni facturación.
-- Se ve una respuesta real con su fuente. La fuente del gimnasio indica cierre a las 22:00.
-- Has utilizado los tres perfiles: vecino, administrador y gestión.
-- No afirmas que haya envío automático, avatar ya disponible, ofertas reales o ahorro garantizado.
-- No has enviado correos o mensajes de WhatsApp reales durante la grabación.
-- Reproduce el MP4 completo antes de subirlo a la carpeta de entrega. Compartir el vídeo con los mismos permisos de lectura que la carpeta y verificar que se puede reproducir desde el enlace.
+Carpeta de entrega: https://drive.google.com/drive/folders/1uekvHDz0VR0K5zitc7_3UGivcsKJaAYA

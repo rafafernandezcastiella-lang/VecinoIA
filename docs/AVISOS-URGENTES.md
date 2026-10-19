@@ -6,7 +6,7 @@
 
 En Administración, «Gestionar avisos ordinarios» permite desplegar «Editar aviso», modificar título/contenido y guardar. «Eliminar aviso» solicita confirmación y elimina su disponibilidad para los vecinos. También admite los ejemplos precargados: se guarda una sustitución al editar o una marca de eliminación por comunidad para que no reaparezcan tras reiniciar. Los avisos urgentes mantienen su operación separada de finalización, sin convertirse ni borrarse por estas acciones ordinarias.
 
-Un ordinario se muestra en las tarjetas del portal. Un urgente activo se muestra además en un banner anterior al contenido, en todas las secciones de la comunidad. Lleva etiqueta visible, título, mensaje y una animación suave de énfasis, sin ocultar texto ni parpadeos rápidos. Respeta prefers-reduced-motion. Administración puede Finalizar aviso urgente para retirar el banner para todos conservando la ficha como finalizada. Desde el 18 de octubre el vecino también puede «quitar anuncio» de su vista personal sin finalizarlo para los demás.
+Un ordinario se muestra en las tarjetas del portal. Un urgente activo se muestra además en un banner anterior al contenido, solo en Mi comunidad, para vecino, administrador y gestión; no aparece en las demás secciones. Lleva etiqueta visible, título, mensaje y una animación suave de énfasis, sin ocultar texto ni parpadeos rápidos. Respeta prefers-reduced-motion. Administración puede Finalizar aviso urgente para retirar el banner para todos conservando la ficha como finalizada. Desde el 18 de octubre el vecino también puede «quitar anuncio» de su vista personal sin finalizarlo para los demás.
 
 ## Quitar anuncios de la página del vecino
 
@@ -27,3 +27,4 @@ Para enviar correo real después del concurso habrá que configurar proveedor y 
 ## Validación
 
 Veinticuatro pruebas locales aprobadas: permisos de publicación y finalización, CSRF, aislamiento por comunidad, clasificación válida, ordinario sin correo, urgente con cuenta correcta de destinatarios simulados, historial finalizado y persistencia. Prueba Edge con contextos separados: publicación ordinaria, urgente, simulación para dos vecinos, actualización del banner sin perder texto en un formulario, ausencia en otra comunidad, finalización, móvil a 390 px y movimiento reducido. Sin errores JavaScript. Los ensayos usan almacenamiento temporal y no añaden avisos a la web pública.
+

@@ -146,3 +146,7 @@ Revisión visual en Edge con los tres roles: Documentos reúne consulta, gestió
 ## Limpieza del vídeo final — 19 de octubre
 
 La limpieza puntual conserva copia previa e impide repetir el borrado en reinicios posteriores. La prueba incluye conservación de documentos, anuncios, consejos, solicitudes de documentos, avisos individuales y directorio, y retirada únicamente de recibos/correos simulados de consultas eliminadas. Se comprueba producción mediante recuentos y huellas de las colecciones que deben conservarse.
+
+## Banner urgente solo en Mi comunidad — 19 de octubre
+
+Edge verifica con los tres roles un aviso urgente activo en portada, ausencia de banner en cada otra sección y en la bandeja de la campana, y recuperación al volver a Mi comunidad. Para vecino se comprueba además actualización periódica manteniendo un borrador sin reintroducir banners. No hay errores JavaScript y los avisos de producción no se modifican. Los controles administrativos de publicación y finalización se conservan.

@@ -76,6 +76,7 @@ const dismissAnnouncementControl = a => role === 'resident' ? `<form class="dism
 const announcement = a => `<article class="card ${a.urgency === 'urgent' ? 'urgent-card' : ''}"><span class="tag">${a.urgency === 'urgent' ? (a.active === false ? 'Urgente · Finalizado' : 'Aviso urgente') : 'Aviso ordinario'}</span><div class="meta">${escape(a.category)} · ${date(a.date)}</div><h3>${escape(a.title)}</h3><p class="announcement-body">${escape(a.body)}</p>${dismissAnnouncementControl(a)}</article>`;
 function announcementList() { return state.announcements.length ? state.announcements.map(announcement).join('') : '<div class="empty">No tienes anuncios pendientes en esta comunidad.</div>'; }
 function urgentBanners() {
+  if (page !== 'home') return '';
   const urgent = state.announcements.filter(a => a.urgency === 'urgent' && a.active !== false);
   return `<section id="urgent-notices" class="urgent-announcements" aria-label="Avisos urgentes de tu comunidad" ${urgent.length ? '' : 'hidden'}>${urgent.map(a => `<article class="urgent-banner"><div class="urgent-label"><span class="urgent-dot" aria-hidden="true"></span>AVISO URGENTE · ${date(a.date)}</div><h2>${escape(a.title)}</h2><p class="announcement-body">${escape(a.body)}</p><small>Comunicado por la administración de ${escape(state.name)}</small>${dismissAnnouncementControl(a)}</article>`).join('')}</section>`;
 }
