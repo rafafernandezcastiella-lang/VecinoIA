@@ -11,6 +11,7 @@ import { createAssistant } from './src/assistant.mjs';
 import { adviceKinds, adviceCategories, seedAdvice } from './src/advice.mjs';
 import { staffInbox, readKey, simulateStaffEmail, validateResidentContact } from './src/staff-inbox.mjs';
 import { residentInbox, markResidentRead, notifyReply, simulatedEmail } from './src/resident-inbox.mjs';
+import { resetConsultationsOnce } from './src/reset-consultations.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const categories = ['General', 'Incidencia', 'Recibos'];
@@ -390,6 +391,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (existsSync(envFile)) process.loadEnvFile(envFile);
   const port = Number(process.env.PORT || 3000);
   const host = process.env.HOST || '127.0.0.1';
+  if (process.env.NODE_ENV === 'production') {
+    const result = resetConsultationsOnce(join(resolve(process.env.DATA_DIR || join(root, 'data')), 'demo.json'), 'reset-consultations-video-2026-10-19');
+    if (result.applied) console.log('Limpieza puntual para el vídeo:', JSON.stringify(result));
+  }
   const server = createApp();
   server.on('error', error => { console.error(`No se pudo iniciar VecinoIA: ${error.message}`); process.exitCode = 1; });
   server.listen(port, host, () => console.log(`VecinoIA · http://${host}:${port} · Datos ficticios, acceso de demostración`));

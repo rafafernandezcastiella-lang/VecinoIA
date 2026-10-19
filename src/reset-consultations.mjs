@@ -13,6 +13,9 @@ export function resetConsultationsOnce(dataFile, operation = 'reset-consultation
   if (!existsSync(backupFile)) writeFileSync(backupFile, JSON.stringify(store, null, 2), { flag: 'wx' });
   const result = { applied: true, communityQueries: (store.tickets || []).length, privateQueries: (store.serviceRequests || []).length };
   store.tickets = []; store.serviceRequests = [];
+  // Retirar solo los recibos y correos simulados de consultas; conservar envíos y avisos.
+  if (store.staffReads) store.staffReads = store.staffReads.filter(key => !['ticket','service'].includes(key.split(':')[1]));
+  if (store.staffEmailNotifications) store.staffEmailNotifications = store.staffEmailNotifications.filter(n => !['ticket','service'].includes(n.kind));
   store.maintenance = [...(store.maintenance || []), operation];
   writeFileSync(`${dataFile}.tmp`, JSON.stringify(store, null, 2));
   renameSync(`${dataFile}.tmp`, dataFile);

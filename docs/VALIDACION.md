@@ -142,3 +142,7 @@ Edge comprueba campana al responder Administración y Gestión, actualización a
 ## Menús agrupados — 19 de octubre
 
 Revisión visual en Edge con los tres roles: Documentos reúne consulta, gestión y envío; Mensajes incluye bandeja, consultas comunitarias y avisos particulares según el rol; Vecinos agrupa directorio, contacto y Atención particular solo para Gestión. Se recorre cada submenú, se comprueba apertura con teclado, resaltado y apertura automática al navegar desde la campana. Sin desbordamiento entre 320 y 1440 px, incluidos 768 y 1024 px; sin errores JavaScript. Datos temporales sin modificar producción. No se altera la lógica de negocio ni los permisos del servidor. Se actualiza el guion de grabación con los nuevos pasos.
+
+## Limpieza del vídeo final — 19 de octubre
+
+La limpieza puntual conserva copia previa e impide repetir el borrado en reinicios posteriores. La prueba incluye conservación de documentos, anuncios, consejos, solicitudes de documentos, avisos individuales y directorio, y retirada únicamente de recibos/correos simulados de consultas eliminadas. Se comprueba producción mediante recuentos y huellas de las colecciones que deben conservarse.

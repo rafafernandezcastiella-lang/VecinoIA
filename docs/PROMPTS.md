@@ -200,3 +200,7 @@ Mientras se completa el cambio, el usuario solicita mover la tarjeta «Bienvenid
 ## 032 — Agrupar el menú por Documentos, Mensajes y Vecinos
 
 19 de octubre de 2026. El usuario solicita ordenar visualmente los menús sin cambiar la funcionalidad. Se crean carpetas desplegables accesibles con Documentos (consulta, gestión y envío), Mensajes (bandeja y consultas, más avisos particulares para vecinos) y Vecinos (directorio, contacto y Atención particular exclusiva de Gestión). Se conserva el acceso por rol y la campana abre automáticamente su carpeta. Validación en Edge de los tres roles, teclado, cada submenú y resoluciones de móvil, iPad y escritorio. Se adapta el guion paso a paso y su HTML imprimible a esta organización.
+
+## 033 — Limpiar consultas antes del vídeo final
+
+19 de octubre de 2026. El usuario pide vaciar todas las consultas para crearlas durante el vídeo. Se programa una limpieza puntual con marcador persistente reset-consultations-video-2026-10-19 y copia completa previa en el volumen. Elimina consultas comunitarias y particulares, sus respuestas y sus recibos/correos simulados; conserva documentos, anuncios, directorio, avisos particulares y solicitudes de envío. No se repite en posteriores reinicios y preserva las consultas que se creen tras esta operación. Prueba de idempotencia y conservación de colecciones; comprobación del estado público antes y después sin crear mensajes de ensayo.
